@@ -617,22 +617,10 @@
 #tabTemplateDropdown {
   display: none;
 }
-#worksheet {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-}
-
-#mapWrapper {
-  transform-origin: center center;
-  margin: auto;
-}
 #mapWrapper {
   transition: transform 0.15s ease-out;
 }
+
 #zoomControls {
   position: fixed;
   bottom: 20px;
@@ -1191,13 +1179,18 @@ function isBackgroundTarget(target) {
   if (target.closest(".unit-tile")) return false;
   if (target.closest("#floatingNotes")) return false;
 
+  // ❌ IMPORTANT: canvas is NOT background if drawing
+  if (target === drawCanvas) {
+    return (mode === "move");   // Only pan on canvas when in MOVE mode
+  }
+
   return (
     target === worksheet ||
     target === mapWrapper ||
-    target === worksheetImage ||
-    target === drawCanvas
+    target === worksheetImage
   );
 }
+
 
 function getTouchDistance(t1, t2) {
   const dx = t2.clientX - t1.clientX;
@@ -1208,8 +1201,12 @@ function getTouchDistance(t1, t2) {
 /* ===== TOUCH: pinch + one-finger pan (any zoom) ===== */
 
 function handleWorksheetTouchStart(e) {
-  // Don't pinch/pan while drawing/checking
-  if (mode === "pen" || mode === "erase" || mode === "check") return;
+  // BLOCK worksheet handling when drawing
+if (e.target === drawCanvas && (mode === "pen" || mode === "erase" || mode === "check")) {
+    return;  // Let canvas handle it!
+}
+
+
 
   // --- Two-finger pinch zoom ---
   if (e.touches.length === 2) {
@@ -2455,6 +2452,25 @@ function drawCheckmark(x, y) {
   ctx.stroke();
   ctx.restore();
 }
+function getCanvasCoordsFromMouseEvent(e) {
+  const rect = drawCanvas.getBoundingClientRect();
+
+  // Map from screen pixels → canvas pixels (accounts for zoom/scale)
+  const x = (e.clientX - rect.left) * (drawCanvas.width / rect.width);
+  const y = (e.clientY - rect.top)  * (drawCanvas.height / rect.height);
+
+  return { x, y };
+}
+
+function getCanvasCoordsFromTouchEvent(e) {
+  const touch = e.touches[0];
+  const rect = drawCanvas.getBoundingClientRect();
+
+  const x = (touch.clientX - rect.left) * (drawCanvas.width / rect.width);
+  const y = (touch.clientY - rect.top)  * (drawCanvas.height / rect.height);
+
+  return { x, y };
+}
 
 
 /* Drawing: mouse */
@@ -2513,52 +2529,7 @@ drawCanvas.addEventListener("mouseleave", () => {
 });
 
 
-/* Drawing: touch */
-drawCanvas.addEventListener("touchstart", e => {
-  const { x, y } = getCanvasCoordsFromTouchEvent(e);
 
-  if (mode === "check") {
-    e.preventDefault();
-    saveDrawState();
-    drawCheckmark(x, y);
-    return;
-  }
-
-  if (mode !== "pen" && mode !== "erase") return;
-  e.preventDefault();
-
-  saveDrawState();
-  isDrawing = true;
-  lastX = x;
-  lastY = y;
-}, { passive: false });
-
-drawCanvas.addEventListener("touchmove", e => {
-  if (!isDrawing) return;
-  if (mode !== "pen" && mode !== "erase") return;
-  e.preventDefault();
-
-  const { x, y } = getCanvasCoordsFromTouchEvent(e);
-
-  if (mode === "pen") {
-    ctx.globalCompositeOperation = "source-over";
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "red";
-  } else if (mode === "erase") {
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.lineWidth = 20;
-    ctx.strokeStyle = "rgba(0,0,0,1)";
-  }
-
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(lastX, lastY);
-  ctx.lineTo(x, y);
-  ctx.stroke();
-
-  lastX = x;
-  lastY = y;
-}, { passive: false });
 
 
 drawCanvas.addEventListener("touchmove", e => {
@@ -2759,6 +2730,4 @@ saveState();
 
 </body>
 </html>
-
-
 
