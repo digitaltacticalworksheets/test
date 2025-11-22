@@ -2619,26 +2619,55 @@ drawCanvas.addEventListener("mouseleave", () => {
 });
 
 
+/* ===== Drawing: touch (pen / erase / check) ===== */
 
+drawCanvas.addEventListener("touchstart", e => {
+  // Ignore pinch / multi-touch
+  if (e.touches.length > 1) return;
 
+  // Checkmark mode: single tap = draw a check
+  if (mode === "check") {
+    e.preventDefault();
+    const { x, y } = getCanvasCoordsFromTouchEvent(e);
+    saveDrawState();
+    drawCheckmark(x, y);
+    return;
+  }
+
+  // Only draw in pen/erase
+  if (mode !== "pen" && mode !== "erase") return;
+
+  e.preventDefault();
+  saveDrawState();
+
+  const { x, y } = getCanvasCoordsFromTouchEvent(e);
+  isDrawing = true;
+  lastX = x;
+  lastY = y;
+}, { passive: false });
 
 drawCanvas.addEventListener("touchmove", e => {
   if (!isDrawing) return;
   if (mode !== "pen" && mode !== "erase") return;
+
+  // If second finger comes down mid-stroke, abort drawing
+  if (e.touches.length > 1) {
+    isDrawing = false;
+    ctx.globalCompositeOperation = "source-over";
+    return;
+  }
+
   e.preventDefault();
 
-  const t = e.touches[0];
-  const r = drawCanvas.getBoundingClientRect();
-  const x = t.clientX - r.left;
-  const y = t.clientY - r.top;
+  const { x, y } = getCanvasCoordsFromTouchEvent(e);
 
   if (mode === "pen") {
     ctx.globalCompositeOperation = "source-over";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 4;
     ctx.strokeStyle = "red";
   } else if (mode === "erase") {
     ctx.globalCompositeOperation = "destination-out";
-    ctx.lineWidth = 20;
+    ctx.lineWidth = 15;
     ctx.strokeStyle = "rgba(0,0,0,1)";
   }
 
@@ -2652,15 +2681,17 @@ drawCanvas.addEventListener("touchmove", e => {
   lastY = y;
 }, { passive: false });
 
-drawCanvas.addEventListener("touchend", () => {
-  isDrawing = false;
-  ctx.globalCompositeOperation = "source-over";
-});
-drawCanvas.addEventListener("touchcancel", () => {
+drawCanvas.addEventListener("touchend", e => {
+  // If any touches are still on canvas, keep the stroke alive
+  if (e.touches && e.touches.length > 0) return;
   isDrawing = false;
   ctx.globalCompositeOperation = "source-over";
 });
 
+drawCanvas.addEventListener("touchcancel", () => {
+  isDrawing = false;
+  ctx.globalCompositeOperation = "source-over";
+});
 
 /* Delete selected */
 document.getElementById("btnDelete").onclick = () => {
