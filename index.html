@@ -2417,20 +2417,29 @@ function stopTileDragTouch(e) {
 
 /* Duplicate tile */
 function duplicateTileGeneric(orig) {
-  const r = orig.getBoundingClientRect();
-  const ws = mapWrapper.getBoundingClientRect();
-  const left = r.left - ws.left;
-  const top  = r.top  - ws.top;
+  // Use the tile's logical position (not screen rect), so it works with zoom + scroll
+  const origLeft = parseFloat(orig.style.left) || 0;
+  const origTop  = parseFloat(orig.style.top)  || 0;
 
-  const cssClass = [...orig.classList].find(c => c !== "unit-tile" && c !== "selected");
-  const dup = createTileElement(orig.dataset.type, cssClass, orig.textContent);
-  dup.style.left = (left + 20) + "px";
-  dup.style.top  = (top  + 20) + "px";
+  const cssClass = [...orig.classList].find(
+    c => c !== "unit-tile" && c !== "selected"
+  );
+
+  const dup = createTileElement(
+    orig.dataset.type,
+    cssClass,
+    orig.textContent
+  );
+
+  // Offset a bit down/right from the original
+  dup.style.left = (origLeft + 20) + "px";
+  dup.style.top  = (origTop  + 20) + "px";
 
   mapWrapper.appendChild(dup);
   select(dup);
   saveState();
 }
+
 
 /* Checkmark drawing */
 function drawCheckmark(x, y) {
