@@ -994,6 +994,10 @@ const LONG_PRESS_MS = 700;
 let longPressTimeout = null;
 let touchMoved = false;
 let mouseMovedDuringPress = false;
+// For double-tap on items in the floating notes list
+let lastNoteTapTime = 0;
+let lastNoteTappedItem = null;
+
 
 /* ===== TAB MANAGEMENT ===== */
 let tabs = [];
@@ -1533,6 +1537,7 @@ bgUploadInput.onchange = e => {
 };
 
 
+
 /* ============================================================
    ==========      CLEAN, FULL PAR SYSTEM BLOCK      ===========
    ============================================================ */
@@ -1540,6 +1545,7 @@ bgUploadInput.onchange = e => {
 let parModeActive = false;
 let parCycleId = 0;
 let parLogEntries = []; // Stored PAR notes (for Notes Tab only)
+let noteLogEntries = []; // Stored note history entries for Notes Tab
 
 // Time formatting
 function formatParTime(date = new Date()) {
@@ -1900,6 +1906,26 @@ function showGlobalNotesInNotesTab() {
       notesPanel.appendChild(item);
     });
   }
+  // 🔹 Note history log
+  if (Array.isArray(noteLogEntries) && noteLogEntries.length > 0) {
+    noteLogEntries.forEach(entry => {
+      noteCount++;
+      const item = document.createElement("div");
+      item.className = "notes-tab-item";
+
+      const header = document.createElement("div");
+      header.className = "notes-tab-header";
+      header.textContent = `[Notes Log] ${entry.tabName} – ${entry.label}`;
+
+      const body = document.createElement("div");
+      body.className = "notes-tab-body";
+      body.textContent = entry.text;
+
+      item.appendChild(header);
+      item.appendChild(body);
+      notesPanel.appendChild(item);
+    });
+  }
 
   if (!noteCount) {
     const empty = document.createElement("div");
@@ -1935,7 +1961,8 @@ function refreshNotesList() {
       item.appendChild(labelSpan);
       item.appendChild(noteSpan);
 
-      item.onclick = () => {
+            // Helper: jump to the tile for this note and select it
+      function focusTileForNote() {
         if (currentTabId !== currentTab.id) {
           saveCurrentTabToMemory();
           currentTabId = currentTab.id;
@@ -1954,7 +1981,44 @@ function refreshNotesList() {
             inline: "center"
           });
         }
+        return match;
+      }
+
+      // Single-click → just jump to tile
+      item.onclick = () => {
+        focusTileForNote();
       };
+
+      // Double-click (mouse) → jump to tile + open note dialog
+      item.ondblclick = (e) => {
+        e.stopPropagation();
+        const tile = focusTileForNote();
+        if (tile) {
+          openNotePrompt(tile);
+        }
+      };
+
+      // Double-tap (touch) → same as double-click
+      item.addEventListener("touchend", (e) => {
+        const now = Date.now();
+
+        if (lastNoteTappedItem === item && (now - lastNoteTapTime) < DOUBLE_TAP_MS) {
+          // Treat as double tap
+          const tile = focusTileForNote();
+          if (tile) {
+            openNotePrompt(tile);
+          }
+          lastNoteTappedItem = null;
+        } else {
+          // First tap: just focus tile (like a single click)
+          focusTileForNote();
+          lastNoteTappedItem = item;
+          lastNoteTapTime = now;
+        }
+
+        e.preventDefault();
+      }, { passive: false });
+
 
       notesList.appendChild(item);
     });
@@ -2043,7 +2107,7 @@ loadFileInput.onchange = e => {
 /* Notes on tiles */
 function openNotePrompt(tile) {
   const stored = tile.dataset.note || "";
-  const label  = tile.textContent;
+  const label  = tile.textContent.trim();
 
   const currentPlain = stored.replace(/^\[\d{2}:\d{2}\]\s*/, "");
 
@@ -2055,6 +2119,20 @@ function openNotePrompt(tile) {
   if (input !== null) {
     const trimmed = input.trim();
 
+    // Get current tab name for context in the log
+    const currentTab = tabs.find(t => t.id === currentTabId);
+    const tabName = currentTab ? currentTab.name : "Unknown Tab";
+
+    // If there was an old note, log it as "previous note"
+    if (stored) {
+      noteLogEntries.push({
+        tabName,
+        label,
+        text: stored,
+        type: "previous"
+      });
+    }
+
     if (trimmed) {
       const now  = new Date();
       const pad2 = n => String(n).padStart(2, "0");
@@ -2062,20 +2140,32 @@ function openNotePrompt(tile) {
 
       const finalNote = `[${timeStr}] ${trimmed}`;
 
+      // Save the latest note on the tile (what you see in the floating list)
       tile.dataset.note = finalNote;
       tile.title        = finalNote;
+
+    
     } else {
+      // Note cleared – log that action too
+      noteLogEntries.push({
+        tabName,
+        label,
+        text: "(note cleared)",
+        type: "cleared"
+      });
+
       delete tile.dataset.note;
       tile.title = "";
     }
 
     saveState();
     saveCurrentTabToMemory();
-    refreshNotesList();   
+    refreshNotesList();
   }
 
   setMode("move");
 }
+
 
 /* Spawn location: one fixed slot per type */
 function placeTileInStackPosition(tile) {
