@@ -1,0 +1,231 @@
+ICS Worksheet Program - Instruction Manual (Text Version)
+
+Overview
+
+This program is an interactive Incident Command System (ICS) worksheet
+designed for Windows desktops, laptops, and tablets. It allows you to
+place, move, and manage fire department units, draw on the worksheet,
+create notes, save/load layouts, and use a timer — all on top of a
+static worksheet background.
+
+This program runs entirely as a local HTML file, meaning: - No
+installation required - Works offline - Runs in any modern browser (Edge
+recommended)
+
+------------------------------------------------------------------------
+
+1. How to Save the Program to Your Computer
+
+To ensure the program works correctly:
+
+1.  Save the following files into one folder on your desktop:
+    -   ics_board.html (your main program file)
+    -   worksheet.png (your worksheet background)
+    -   Any .ico file you want to use as the shortcut icon
+    -   Any saved JSON layout files (optional)
+2.  Make sure the files stay in the same folder, because:
+    -   The HTML loads worksheet.png from the same directory
+    -   Saved/loaded JSON layouts expect consistent paths
+3.  Do NOT move files individually after setting up.
+    If you must rename or move things later, move the entire folder.
+
+------------------------------------------------------------------------
+
+2. Creating a Desktop Shortcut With Your Custom Icon
+
+1.  Right-click ics_board.html
+2.  Select Send to → Desktop (create shortcut)
+3.  On the desktop, right-click the new shortcut → Properties
+4.  Click Change Icon
+5.  Browse to your custom .ico file (e.g., ICS_flame_clean.ico)
+6.  Click Apply → OK
+
+Your ICS program now has a professional custom icon.
+
+------------------------------------------------------------------------
+
+3. Starting the Program
+
+Double-click the shortcut OR the ics_board.html file.
+
+Recommended browser: Microsoft Edge
+(Chrome also works well; Internet Explorer will NOT work)
+
+------------------------------------------------------------------------
+
+4. Sidebar Presets (Engines, Towers, Rescues, etc.)
+
+Units are organized in collapsible sidebar groups: - Engines - Towers -
+Rescues - RIT - Command Staff - Outside Teams - RIT Outside Teams
+
+To spawn a unit tile:
+
+1.  Click any preset button (e.g., E-1, T-9, R-8, D-4)
+2.  A draggable tile appears on the worksheet
+3.  Move the tile anywhere on the screen
+
+------------------------------------------------------------------------
+
+5. Tile Controls
+
+Moving Tiles
+
+-   Click Move/Select Mode
+-   Drag tiles anywhere on the worksheet
+
+Editing Tile Text
+
+-   Double-click a tile to open the edit prompt
+-   Enter the label (e.g., “E-11 PAR”, “Evac Group”)
+
+Duplicating a Tile
+
+-   Double-click a tile while in Move mode
+-   A copy appears slightly offset
+
+Deleting a Tile
+
+-   Select Delete Mode
+-   Tap/click any tile to remove it
+
+------------------------------------------------------------------------
+
+6. Notes Feature
+
+Adding Notes
+
+1.  Click Note Mode
+2.  Tap a tile
+3.  Enter note text
+
+A small 📝 icon appears on tiles with notes.
+
+Viewing Notes
+
+-   Notes appear in the floating Notes Window
+-   Clicking a note jumps directly to its tile
+
+Moving the Notes Window
+
+-   Drag it by the header bar
+-   Works with both mouse and touch
+
+------------------------------------------------------------------------
+
+7. Drawing Tools
+
+Draw Mode
+
+-   Tap/drag to draw on the worksheet
+-   Ideal for assignments, collapse zones, perimeters
+
+Eraser Mode
+
+-   Erases ONLY your drawing lines
+-   Does NOT erase tiles or the worksheet
+
+Checkmark Mode
+
+-   Tap anywhere to place a ✓ mark
+
+------------------------------------------------------------------------
+
+8. Time Tracker (Incident Timer)
+
+-   Shows elapsed incident time (HH:MM:SS)
+-   Start to begin
+-   Pause to stop
+-   Reset to zero the clock
+
+Timer state is saved when exporting a JSON layout.
+
+------------------------------------------------------------------------
+
+9. Saving & Loading Layouts
+
+Saving
+
+1.  Click Save Layout
+2.  Enter a file name (e.g., “2nd_Alarm_AlphaSide”)
+3.  A .json file downloads containing:
+    -   All tile positions
+    -   Notes
+    -   Timer state
+    -   Drawing data
+
+Loading
+
+1.  Click Load Layout
+2.  Choose any .json layout file
+3.  The full command board restores instantly
+
+------------------------------------------------------------------------
+
+10. Auto-Stack Feature
+
+Click Auto Stack to: - Automatically align all units in the sidebar
+order - Helps quickly reset or organize the scene
+
+------------------------------------------------------------------------
+
+11. Screenshot Capture (Recommended for Recordkeeping)
+
+Since printing may shift elements:
+
+Best method:
+
+Use Windows Snip Tool - Press Win + Shift + S - Drag to capture the
+worksheet area - Paste or save the screenshot as needed
+
+Works reliably on desktop and tablets.
+
+------------------------------------------------------------------------
+
+12. Tips for Best Performance
+
+-   Use Edge for the smoothest touch performance
+-   Keep the program folder organized
+-   Keep notes window off the worksheet before saving layouts
+-   Lock Surface tablet orientation before active use
+
+------------------------------------------------------------------------
+
+13. Troubleshooting
+
+Worksheet won’t load
+
+-   Ensure worksheet.png is in the SAME folder as the HTML
+
+Tiles won’t move on tablet
+
+-   Make sure Move Mode is selected
+-   Disable Windows “Press and hold for right-click” in Pen settings
+
+JSON won’t load
+
+-   JSON file must come from this program
+-   Do not manually edit JSON files
+
+------------------------------------------------------------------------
+
+14. Backing Up Your ICS Folder
+
+You can safely: - Zip the entire folder
+- Put backups on OneDrive
+- Transfer it to flash drives or other PCs
+
+Everything is self-contained.
+
+------------------------------------------------------------------------
+
+Conclusion
+
+You now have a fully portable, fully functional ICS command board that
+runs anywhere, requires no installation, and allows customized
+fireground command and tracking in real time.
+
+If you need new features, icons, or upgrades, you can request
+modifications at any time.
+
+Created by District Chief Daniel Romano, Orlando Fire Department.
+

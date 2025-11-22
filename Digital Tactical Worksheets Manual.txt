@@ -1,0 +1,148 @@
+Digital Tactical Worksheet – User Instruction Manual
+(2025 Edition)
+
+1. OVERVIEW
+The Digital Tactical Worksheet is a browser-based incident command and accountability tool for real-time strategy, resource tracking, and situational awareness. It works on desktops, laptops, iPads, and tablets directly in your web browser — no installation required.
+
+Use it for:
+- Structure fires
+- MCIs
+- High-rise operations
+- Wildland/brush events
+- Training and simulations
+- ICS instruction
+
+Access the program at:
+https://digitaltacticalworksheets.github.io/tactical-worksheets
+
+2. HOW TO OPEN THE PROGRAM
+Desktop / Laptop:
+1. Open your preferred browser.
+2. Visit the web address above.
+
+iPad / Tablet:
+1. Open Safari or Chrome.
+2. Navigate to the same URL.
+3. Rotate the device to Landscape mode.
+4. Use the Fullscreen button inside the program for maximum workspace.
+
+3. MAIN INTERFACE
+Sidebar (Left Side):
+- Unit creation buttons
+- Collapsible unit groups
+- Notes list panel
+- Utility buttons
+The sidebar remains vertical at all screen sizes.
+
+Top Toolbar:
+- Tile controls (Add Unit, Add Text, Delete)
+- Mode controls (Move, Draw, Erase, Checkmark, Note)
+- Undo / Redo
+- Save Layout / Load Layout
+- Fullscreen button
+- Timer controls
+
+Worksheet Area:
+Displays the active worksheet background, tiles, drawings, and notes. Tabs appear at the top to switch between different boards. The worksheet automatically scales on tablets to improve visibility.
+
+4. WORKSHEETS & TABS
+The program supports multiple worksheets (tabs). Each tab maintains its own:
+- Tiles
+- Notes
+- Drawings
+- Background image
+- Undo/redo history
+
+Tabs can be used for:
+- Main Board
+- Staging
+- RIT
+- Planning
+- Training
+- Accountability
+
+5. UNIT TILES
+Creating a Tile:
+Tap a unit button (Engine, Tower, Rescue, RIT, Chief, Other).
+
+Moving a Tile:
+Use Move Mode, then drag to reposition.
+
+Duplicating a Tile:
+Double-click the tile.
+
+Deleting a Tile:
+Use Delete Mode or the Delete button.
+
+6. TILE NOTES
+Adding or Editing Notes:
+Long-press a tile (hold without dragging). Enter your note and press OK.
+
+Notes Window:
+Displays all notes for the current worksheet. Selecting a note highlights its tile. This window can be moved freely and cannot be dragged off-screen.
+
+7. DRAWING & MARKUP TOOLS
+Draw Mode:
+Freehand drawing.
+
+Erase Mode:
+Erases drawing strokes only.
+
+Checkmark Mode:
+Places ✓ marks on the worksheet.
+
+Move Mode:
+Default mode for repositioning tiles.
+
+8. BACKGROUND IMAGES
+Changing the Background:
+Tap “Change Background” and select any image from your device. The worksheet updates immediately and the drawing canvas resizes to match the new image.
+
+Uses include:
+- Preplans
+- Maps
+- Aerial images
+- Floor plans
+- Custom ICS sheets
+
+9. SAVING & LOADING INCIDENT LAYOUTS (JSON)
+Save Layout:
+Downloads a JSON file containing everything:
+- Tiles and their positions
+- All notes
+- Drawings
+- Backgrounds
+- Tabs
+- Timer state
+
+Load Layout:
+Select a previously saved JSON file to restore your entire board exactly as it was. Perfect for continuing incidents, scenario setup, and after-action review.
+
+10. FULLSCREEN MODE
+Desktop:
+Tap the Fullscreen button. Exit with ESC.
+
+Tablet:
+Tap Fullscreen for an expanded workspace.
+
+11. AUTO-STACK
+Organizes tiles automatically on the current worksheet, grouping similar units while leaving text labels untouched.
+
+12. MOBILE / TABLET OPTIMIZATION
+Features:
+- Vertical sidebar
+- Scaled worksheet
+- Large touch-friendly buttons
+- Recommended Landscape orientation
+
+13. TROUBLESHOOTING
+Tiles won’t move: Ensure Move Mode is active.
+Notes won’t open: Long-press without dragging; ensure you’re not in Draw/Erase/Delete Mode.
+Notes window missing: It cannot leave the screen; drag it from the edge.
+Background won’t change: Use PNG/JPG/WebP.
+Layout won’t load: Choose a valid JSON layout file.
+
+14. CREDITS
+Created by: Daniel Romano
+District Chief, Orlando Fire Department
+Designed for incident command, training, and operational efficiency.

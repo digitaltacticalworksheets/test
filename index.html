@@ -1,0 +1,2741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Favicon: ICO only -->
+  <link rel="icon" type="image/x-icon" href="DTW_Icon.ico">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta charset="UTF-8" />
+  <title>Digital Tactical Worksheet</title>
+  <style>
+  * { box-sizing: border-box; user-select: none; }
+
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #222;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Toolbar - Standard flow (Unpinned) */
+  #toolbar {
+    background: #333;
+    padding: 6px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    color: #fff;
+    border-bottom: 1px solid #444;
+  }
+
+  #toolbar button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Tile button colors */
+  #btnEngine { background: #b71c1c; color: #fff; font-weight: bold; }
+  #btnTower  { background: #1565c0; color: #fff; font-weight: bold; }
+  #btnRescue { background: #2e7d32; color: #fff; font-weight: bold;}
+  #btnChief  { background: #fbc02d; color: #000; font-weight: bold;}
+  #btnRIT    { background: #f2721D; color: #000; font-weight: bold; }
+  #btnOther  { background: #b6c388; color: #000; font-weight: bold;}
+
+  /* Utility buttons */
+  #btnDelete      { background: #ee0707; color: #fff; font-weight: bold;}
+  #btnUndo        { background: #555;    color: #fff; font-weight: bold; }
+  #btnRedo        { background: #555;    color: #fff; font-weight: bold; }
+  #btnAutoStack   { background: #f3a228; color: #000; font-weight: bold; }
+  #btnSaveLayout  { background: #00695c; color: #fff; font-weight: bold; }
+  #btnLoadLayout  { background: #0277bd; color: #fff; font-weight: bold; }
+  #btnToggleSidebar { background: #fff; border: 1px solid #777; color: #333; }
+  #btnChangeBg    { background: #e65100; color: #fff; font-weight: bold;}
+
+  /* Modes */
+  #btnModeMove  { background: #1976d2; color: #fff; }
+  #btnModePen   { background: #e60d0d; color: #fff; font-weight: bold; }
+  #btnModeErase { background: #ce588f; color: #fff; font-weight: bold;}
+  #btnModeCheck { background: #2e7d32; color: #fff; font-weight: bold;}
+  #btnText {
+    background: #607d8b;
+    color: #fff; font-weight: bold;
+  }
+  /* Toolbar dropdown (More ▾) */
+.toolbar-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.toolbar-dropdown .dropdown-toggle {
+  background: #444;
+  color: #fff;
+  font-weight: bold;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 4px;
+  display: none;
+  flex-direction: column;
+  z-index: 10000;
+  min-width: 160px;
+}
+
+.dropdown-menu.open {
+  display: flex;
+}
+
+.dropdown-menu button {
+  width: 100%;
+  justify-content: flex-start;
+  margin: 2px 0;
+  font-size: 13px;
+  height: 28px;
+}
+
+
+  #toolbar button:hover {
+    filter: brightness(1.1);
+  }
+  /* Normal state */
+#initParBtn {
+  background: #0277bd;  /* blue */
+  color: white;
+  font-weight: bold;
+}
+
+/* Active PAR state */
+#initParBtn.par-active {
+  background: #c62828 !important; /* red */
+  color: #fff !important;
+}
+
+
+  /* MAIN LAYOUT */
+  #board {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    border-top: 1px solid #444;
+    background: #555;
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+  }
+
+  /* Sidebar */
+  #sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 280px;
+    background: #2b2b2b;
+    border-right: 1px solid #444;
+    padding: 8px;
+    transition: margin-left 0.3s ease;
+    flex-shrink: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(100vh - 60px);
+  }
+
+  #sidebar.hidden {
+    margin-left: -290px;
+    display: none;
+  }
+
+  .preset-group {
+    background: #333;
+    border-radius: 4px;
+    padding: 6px;
+  }
+
+  .preset-title {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #fff;
+  }
+
+  .preset-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .preset-buttons button {
+    font-size: 14px !important;
+    padding: 6px 10px !important;
+    min-width: 40px !important;
+    height: 32px !important;
+    border-radius: 4px !important;
+    font-weight: 700;
+  }
+
+  .preset-engine { background: #b71c1c; color: #fff; }
+  .preset-tower  { background: #1565c0; color: #fff; }
+  .preset-rescue { background: #2e7d32; color: #fff; }
+  .preset-rit    { background: #ff6f00; color: #000; }
+  .preset-chief  { background: #fbc02d; color: #000; }
+
+  .collapsible-header {
+    cursor: pointer;
+    color: #fff;
+    font-weight: bold;
+    user-select: none;
+  }
+
+  .collapsible-content {
+    overflow: hidden;
+    max-height: 500px;
+    transition: max-height 0.25s ease-out;
+  }
+
+  .collapsed .collapsible-content {
+    max-height: 0;
+  }
+
+  .collapsible-header::after { content: " ▼"; }
+  .collapsed .collapsible-header::after { content: " ▲"; }
+
+  /* TAB BAR STYLES */
+  #workspaceContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #000;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  #tabBar {
+    background: #222;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    border-bottom: 1px solid #444;
+    height: 34px;
+  }
+
+  .tab-item {
+    padding: 0 10px;
+    background: #333;
+    color: #aaa;
+    border-right: 1px solid #444;
+    cursor: pointer;
+    font-size: 13px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tab-item:hover {
+    background: #444;
+    color: #fff;
+  }
+
+  .tab-item.active {
+    background: #0277bd;
+    color: #fff;
+    font-weight: bold;
+  }
+
+  .tab-close {
+    font-size: 14px;
+    width: 16px;
+    height: 16px;
+    line-height: 14px;
+    text-align: center;
+    border-radius: 50%;
+    color: #ccc;
+    cursor: pointer;
+  }
+
+  .tab-close:hover {
+    background: rgba(0,0,0,0.3);
+    color: #fff;
+  }
+
+  #btnAddTab {
+    padding: 0 12px;
+    background: #1b5e20;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    border: none;
+    font-size: 16px;
+  }
+
+  #btnAddTab:hover { background: #2e7d32; }
+
+  /* WORKSHEET AREA */
+ #worksheet {
+  position: relative;
+  flex: 1;
+  background: #fff;
+  display: flex;
+  justify-content: flex-start;   /* was center */
+  align-items: flex-start;       /* was flex-start (ok) */
+  padding: 10px;
+  overflow: auto;
+  touch-action: none;
+}
+
+  #mapWrapper {
+    position: relative;
+    display: inline-block;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    max-width: 100%;
+    max-height: 100%;
+    will-change: transform;
+  }
+
+  #worksheetImage {
+    display: block;
+    max-width: none;
+    pointer-events: none;
+  }
+
+  #drawCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    touch-action: none;
+  }
+
+  .unit-tile {
+    position: absolute;
+    min-width: 60px;
+    padding: 3px 6px;
+    border: 1px solid #000;
+    background: #ddd;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 3px;
+    cursor: grab;
+    z-index: 10;
+    white-space: nowrap;
+  }
+  .unit-tile .par-btn {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: 4px;
+  border: 1px solid #000;
+  background: #fff;
+  cursor: pointer;
+  display: none; /* hidden unless PAR is active */
+}
+.unit-tile .par-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+/* PAR pending: bold bright red outline */
+.unit-tile.par-pending {
+  box-shadow: 0 0 0 3px #ff1744;
+}
+/* PAR complete: thick green outline */
+.unit-tile.par-complete {
+  box-shadow: 0 0 0 3px #00e676; /* bright green */
+}
+
+
+
+  .unit-tile.engine { background: #ff8a80; }
+  .unit-tile.tower  { background: #82b1ff; }
+  .unit-tile.rescue { background: #a5d6a7; }
+  .unit-tile.chief  { background: #fff59d; }
+  .unit-tile.rit    { background: #ff6f00; }
+  .unit-tile.other  { background: #b6c388; }
+
+  .unit-tile.selected {
+    outline: 2px solid #000;
+  }
+.unit-tile.selected {
+  outline: none;
+  box-shadow: inset 0 0 0 2px #000;  /* inner black selection */
+}
+/* Selected + PAR-complete: show both */
+.unit-tile.par-complete.selected {
+  box-shadow:
+    0 0 0 3px #00e676,      /* outer green PAR complete */
+    inset 0 0 0 2px #000;   /* inner black selection */
+}
+
+/* Selected + PAR-pending: show both */
+.unit-tile.par-pending.selected {
+  box-shadow:
+    0 0 0 3px #ff1744,      /* outer red PAR pending */
+    inset 0 0 0 2px #000;   /* inner black selection */
+}
+
+  .unit-tile[data-note]::after {
+    content: "📝";
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    font-size: 14px;
+    background: #222;
+    color: #ffeb3b;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 2px rgba(0,0,0,0.7);
+    pointer-events: none;
+  }
+
+  .unit-tile.texttile {
+    background: #eee;
+    color: #111;
+    border: 1px solid #444;
+    padding: 4px 7px;
+    min-width: 50px;
+    max-width: 300px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .spacer { flex-grow: 1; }
+
+  .mode-indicator {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+  /* PAR status dot on tiles */
+.unit-tile::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent; /* default: no status */
+}
+
+/* Pending PAR = yellow */
+.unit-tile[data-par-status="pending"]::before {
+  background: #ffeb3b;
+}
+
+/* PAR complete = green */
+.unit-tile[data-par-status="complete"]::before {
+  background: #4caf50;
+}
+
+
+  .note-item {
+    font-size: 14px;
+    color: #f5f5f5;
+    padding: 3px 4px;
+    margin-bottom: 2px;
+    border-radius: 3px;
+    background: #424242;
+    cursor: pointer;
+  }
+
+  .note-item:hover {
+    background: #616161;
+  }
+
+  .note-label {
+    font-weight: bold;
+    margin-right: 4px;
+  }
+
+  .note-text {
+    opacity: 0.9;
+  }
+
+  /* Floating Notes Window */
+  #floatingNotes {
+    position: absolute;
+    top: 50px;
+    left: 85%;
+    width: 240px;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    z-index: 9999;
+    overflow: hidden;
+    display: none;
+  }
+
+  #floatingNotesHeader {
+    background: #111;
+    padding: 6px;
+    color: #fff;
+    font-weight: bold;
+    cursor: grab;
+    user-select: none;
+    text-align: center;
+  }
+
+#floatingNotesContent {
+  max-height: 75vh;   /* 75% of the visible screen height */
+  overflow-y: auto;
+  padding: 4px;
+}
+
+
+  #floatingNotes.dragging #floatingNotesHeader {
+    cursor: grabbing;
+    background: #000;
+  }
+
+  /* Tablet / iPad layout */
+@media (max-width: 1100px) {
+
+  /* Keep sidebar vertical on the left */
+  #board {
+    flex-direction: row; 
+  }
+
+  /* Sidebar remains full height on the left */
+  #sidebar {
+    width: 250px;             /* or whatever your normal width is */
+    max-height: none;         
+    border-right: 1px solid #444;
+    border-bottom: none;
+    overflow-y: auto;
+  }
+
+  #workspaceContainer {
+    flex: 1;
+  }
+
+  #worksheet {
+    padding: 10px;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  /* Scale entire worksheet on tablets */
+  #mapWrapper {
+    transform: scale(0.9);        /* adjust if needed */
+    transform-origin: top left;
+  }
+}
+
+
+
+  #btnHelp {
+    background: #4a148c;
+    color: #fff;
+  }
+  #notesTabPanel {
+  display: none;
+  width: 100%;
+  max-width: 900px;
+  margin: 10px auto;
+  background: #1e1e1e;
+  color: #f5f5f5;
+  border-radius: 6px;
+  padding: 10px 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.6);
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+/* Each note block inside Notes tab */
+.notes-tab-item {
+  border-bottom: 1px solid #444;
+  padding: 6px 4px;
+}
+
+.notes-tab-item:last-child {
+  border-bottom: none;
+}
+
+.notes-tab-item .notes-tab-header {
+  font-weight: bold;
+  margin-bottom: 2px;
+  color: #ffeb3b; /* tab name + label */
+}
+
+.notes-tab-item .notes-tab-body {
+  color: #f5f5f5;
+}
+
+#zoomSlider {
+  width: 120px;
+  accent-color: #0277bd;
+  margin: 0 4px;
+  cursor: pointer;
+}
+.tab-dropdown {
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+}
+
+.tab-dropdown .dropdown-toggle {
+  background: #444;
+  color: #fff;
+  font-size: 13px;
+  border-radius: 0;
+  height: 100%;
+}
+/* Temporarily hide the "New Worksheet" dropdown */
+#tabTemplateDropdown {
+  display: none;
+}
+#worksheet {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+#mapWrapper {
+  transform-origin: center center;
+  margin: auto;
+}
+#mapWrapper {
+  transition: transform 0.15s ease-out;
+}
+#zoomControls {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+
+  background: rgba(252, 245, 245, 0);
+  backdrop-filter: clear(6px);
+  padding: 6px 10px;
+  border-radius: 8px;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+#zoomControls button {
+  height: 15px;
+  width: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+}
+
+#zoomControls input[type="range"] {
+  width: 80px;
+}
+#notesTabPanel {
+  display: none;
+  padding: 10px;
+  overflow-y: auto;
+  background: #111;
+  color: #fff;
+  height: calc(100vh - 120px); /* adjust for toolbar & tabs */
+}
+
+
+
+
+
+  </style>
+
+
+</head>
+<body>
+
+  <div id="toolbar">
+    <button id="btnToggleSidebar">Toggle Preset Units</button>
+
+    <div class="spacer"></div>
+
+    <button id="btnEngine">Engine</button>
+    <button id="btnTower">Tower</button>
+    <button id="btnRescue">Rescue</button>
+    <button id="btnChief">Chief</button>
+    <button id="btnRIT">RIT</button>
+    <button id="btnOther">Other</button>
+    <button id="btnText">Text</button>
+
+    <div class="spacer"></div>
+
+    <button id="btnAutoStack" title="Auto Organize">Stack Units</button>
+    <button id="initParBtn">PAR</button>
+
+    <div class="spacer"></div>
+
+    <button id="btnModePen" title="Draw Lines">Draw</button>
+    <button id="btnModeErase" title="Erase Drawing">Erase</button>
+    <button id="btnModeCheck" title="Place Checkmarks">Chk</button>
+    <button id="btnDelete" title="Delete Selected TIle">Delete</button>
+    <button id="btnUndo">Undo</button>
+    <button id="btnRedo">Redo</button>
+
+    <!-- Dropdown for Save/Load/Upload/Help -->
+    <div id="moreDropdown" class="toolbar-dropdown">
+      <button id="btnMoreActions" class="dropdown-toggle">More ▾</button>
+      <div id="moreMenu" class="dropdown-menu">
+        <button id="btnSaveLayout">Save Layout</button>
+        <button id="btnLoadLayout">Load Layout</button>
+        <button id="btnChangeBg" title="Upload Image/Map">Upload Worksheet</button>
+        <button id="btnHelp">Help / Manual</button>
+      </div>
+    </div>
+    <!-- Zoom controls -->
+<div id="zoomControls">
+  <button id="btnZoomOut" title="Zoom Out">-</button>
+  <input id="zoomSlider" type="range" min="50" max="175" value="100" />
+  <button id="btnZoomIn" title="Zoom In">+</button>
+</div>
+
+
+<button id="btnFullscreen">Fullscreen</button>
+
+    <span id="modeLabel" class="mode-indicator">Mode: Move/Select</span>
+
+  </div>
+
+  <div id="board">
+    <div id="sidebar">
+      <div class="preset-group" style="padding:4px 6px; display:flex; gap:4px; justify-content:space-between;">
+        <button id="btnCollapseAll" style="flex:1; font-size:11px;">Collapse All</button>
+        <button id="btnExpandAll" style="flex:1; font-size:11px;">Expand All</button>
+      </div>
+
+      <div class="preset-group collapsible-group">
+        <div class="preset-title collapsible-header">Engines</div>
+        <div class="preset-buttons collapsible-content" id="enginePresets"></div>
+      </div>
+
+      <div class="preset-group collapsible-group">
+        <div class="preset-title collapsible-header">Towers</div>
+        <div class="preset-buttons collapsible-content" id="towerPresets"></div>
+      </div>
+
+      <div class="preset-group collapsible-group">
+        <div class="preset-title collapsible-header">Tower Outside Teams</div>
+        <div class="preset-buttons collapsible-content" id="towerOutsidePresets"></div>
+      </div>
+
+      <div class="preset-group collapsible-group">
+        <div class="preset-title collapsible-header">Rescues</div>
+        <div class="preset-buttons collapsible-content" id="rescuePresets"></div>
+      </div>
+
+      <div class="preset-group collapsible-group">
+        <div class="preset-title collapsible-header">RIT</div>
+        <div class="preset-buttons collapsible-content" id="ritPresets"></div>
+      </div>
+
+      <div class="preset-group collapsible-group">
+        <div class="preset-title collapsible-header">Command</div>
+        <div class="preset-buttons collapsible-content" id="chiefPresets"></div>
+      </div>
+
+      <div class="preset-group collapsible-group">
+        <div class="preset-title collapsible-header">Medic Units</div>
+        <div class="preset-buttons collapsible-content" id="medicUnitPresets"></div>
+      </div>
+    </div>
+
+<div id="workspaceContainer">
+
+  <!-- Tab bar (single instance) -->
+  <div id="tabBar">
+    <!-- tabs are injected here before this button -->
+    <button id="btnAddTab">+</button>
+    ...
+  </div>
+
+  <!-- Worksheet area (RESTORED) -->
+  <div id="worksheet">
+    <div id="mapWrapper">
+      <img
+        id="worksheetImage"
+        src="plain worksheet.png"
+        alt="Worksheet"
+      />
+      <canvas id="drawCanvas"></canvas>
+    </div>
+  </div>
+
+  <!-- 🔹 Notes Tab panel (GLOBAL NOTES + PAR LOG) -->
+  <div id="notesTabPanel"></div>
+
+</div> <!-- end #workspaceContainer -->
+
+
+<!-- Floating Notes window (keep outside container or just after it) -->
+<div id="floatingNotes">
+  <div id="floatingNotesHeader">Notes</div>
+  <div id="floatingNotesContent"></div>
+</div>
+
+<input
+  type="file"
+  id="loadFileInput"
+  accept="application/json"
+  style="display:none"
+/>
+<input
+  type="file"
+  id="bgUploadInput"
+  accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
+  style="display:none"
+/>
+
+<script>
+  // existing JS...
+</script>
+
+<script>
+/* ===== DOM references ===== */
+const worksheet      = document.getElementById("worksheet");
+const mapWrapper     = document.getElementById("mapWrapper"); 
+const worksheetImage = document.getElementById("worksheetImage");
+const drawCanvas     = document.getElementById("drawCanvas");
+const ctx            = drawCanvas.getContext("2d");
+const modeLabel      = document.getElementById("modeLabel");
+
+const floatingNotes        = document.getElementById("floatingNotes");
+const floatingNotesHeader  = document.getElementById("floatingNotesHeader");
+const floatingNotesContent = document.getElementById("floatingNotesContent");
+const notesList            = floatingNotesContent;
+
+const loadFileInput       = document.getElementById("loadFileInput");
+const bgUploadInput       = document.getElementById("bgUploadInput"); 
+const btnSaveLayout       = document.getElementById("btnSaveLayout");
+const btnLoadLayout       = document.getElementById("btnLoadLayout");
+const btnChangeBg         = document.getElementById("btnChangeBg"); 
+const btnCollapseAll      = document.getElementById("btnCollapseAll");
+const btnExpandAll        = document.getElementById("btnExpandAll");
+const btnToggleSidebar    = document.getElementById("btnToggleSidebar");
+const sidebar             = document.getElementById("sidebar");
+const btnZoomIn   = document.getElementById("btnZoomIn");
+const btnZoomOut  = document.getElementById("btnZoomOut");
+const tabTemplateDropdown = document.getElementById("tabTemplateDropdown");
+const btnNewWorksheet     = document.getElementById("btnNewWorksheet");
+const templateMenu        = document.getElementById("templateMenu");
+
+const zoomSlider  = document.getElementById("zoomSlider");
+
+let zoomLevel = 1;           // 1.0 = 100%
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 1.75;
+
+const moreDropdown   = document.getElementById("moreDropdown");
+const btnMoreActions = document.getElementById("btnMoreActions");
+const moreMenu       = document.getElementById("moreMenu");
+
+if (btnMoreActions && moreMenu && moreDropdown) {
+  btnMoreActions.addEventListener("click", (e) => {
+    e.stopPropagation();
+    moreMenu.classList.toggle("open");
+  });
+}
+
+// New worksheet template dropdown
+if (btnNewWorksheet && templateMenu && tabTemplateDropdown) {
+  btnNewWorksheet.addEventListener("click", (e) => {
+    e.stopPropagation();
+    templateMenu.classList.toggle("open");
+  });
+
+  templateMenu.querySelectorAll("button[data-template]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.template;
+      createTabFromTemplate(key);
+      templateMenu.classList.remove("open");
+    });
+  });
+}
+
+// Global click: close both dropdowns
+document.addEventListener("click", (e) => {
+  if (moreDropdown && !moreDropdown.contains(e.target)) {
+    moreMenu.classList.remove("open");
+  }
+  if (tabTemplateDropdown && !tabTemplateDropdown.contains(e.target)) {
+    templateMenu.classList.remove("open");
+  }
+});
+
+
+/* Tab Elements */
+const tabBar    = document.getElementById("tabBar");
+const btnAddTab = document.getElementById("btnAddTab");
+
+/* ===== Default layout ===== */
+const DEFAULT_LAYOUT = {
+  "tabs": [
+    {
+      "id": 1,
+      "name": "Main Board",
+      "bgImage": "plain worksheet.png",
+      "tiles": [
+        { "type":"text","cssClass":"texttile","left":"840px","top":"580px","label":"SIDE A","note":"" },
+        { "type":"text","cssClass":"texttile","left":"830px","top":"250px","label":"SIDE C","note":"" },
+        { "type":"text","cssClass":"texttile","left":"1040px","top":"420px","label":"SIDE D","note":"" },
+        { "type":"text","cssClass":"texttile","left":"610px","top":"410px","label":"SIDE B","note":"" },
+        { "type":"text","cssClass":"texttile","left":"-10px","top":"-10px","label":"DISPATCHED UNITS","note":"" },
+        { "type":"text","cssClass":"texttile","left":"60px","top":"170px","label":"ON SCENE","note":"" }
+      ],
+      "history": [],
+      "historyIndex": -1,
+      "canvasDataURL": null
+    },
+    {
+      "id": 2,
+      "name": "Benchmarks",
+      "bgImage": "blank worksheet.png",
+      "tiles": [
+        { "type":"Engine","cssClass":"engine","left":"20px","top":"20px","label":"Water on the fire","note":"" },
+        { "type":"Engine","cssClass":"engine","left":"20px","top":"48px","label":"Water Supply","note":"" },
+        { "type":"Engine","cssClass":"engine","left":"20px","top":"76px","label":"Fire Knocked Down","note":"" },
+        { "type":"Engine","cssClass":"engine","left":"20px","top":"104px","label":"Fire Out","note":"" },
+
+        { "type":"Tower","cssClass":"tower","left":"200px","top":"20px","label":"Primary Search","note":"" },
+        { "type":"Tower","cssClass":"tower","left":"200px","top":"48px","label":"2nd egress/ladders","note":"" },
+        { "type":"Tower","cssClass":"tower","left":"200px","top":"76px","label":"Secondary Search","note":"" },
+        { "type":"Tower","cssClass":"tower","left":"200px","top":"104px","label":"Primary Vent","note":"" },
+
+        { "type":"Rescue","cssClass":"rescue","left":"380px","top":"20px","label":"2-out","note":"" },
+        { "type":"Rescue","cssClass":"rescue","left":"380px","top":"48px","label":"Ready Rescue","note":"" },
+        { "type":"Rescue","cssClass":"rescue","left":"380px","top":"76px","label":"Rehab","note":"" },
+
+        { "type":"RIT","cssClass":"rit","left":"560px","top":"20px","label":"RIT Established","note":"" },
+        { "type":"RIT","cssClass":"rit","left":"560px","top":"48px","label":"Elec. Utilities","note":"" },
+        { "type":"RIT","cssClass":"rit","left":"560px","top":"76px","label":"Gas Utilities","note":"" },
+
+        { "type":"Chief","cssClass":"chief","left":"740px","top":"20px","label":"Safety Officer","note":"" },
+
+        { "type":"Other","cssClass":"other","left":"920px","top":"20px","label":"Fire Pump/FDC","note":"" },
+        { "type":"Other","cssClass":"other","left":"920px","top":"48px","label":"Salvage","note":"" },
+        { "type":"Other","cssClass":"other","left":"920px","top":"76px","label":"Overhaul","note":"" }
+      ],
+      "history": [],
+      "historyIndex": -1,
+      "canvasDataURL": null
+    },
+    {
+      "id": 3,
+      "name": "Tactical Worksheet",
+      "bgImage": "worksheet.png",
+      "tiles": [],
+      "history": [],
+      "historyIndex": -1,
+      "canvasDataURL": null
+    },
+    {
+      "id": 1763592420813,
+      "name": "Blank",
+      "bgImage": "blank worksheet.png",
+      "tiles": [],
+      "history": [],
+      "historyIndex": -1,
+      "canvasDataURL": null
+    },
+    {
+      "id": 9999,
+      "name": "Notes",
+      "bgImage": "blank worksheet.png",
+      "tiles": [],
+      "history": [],
+      "historyIndex": -1,
+      "canvasDataURL": null,
+      "isNotesTab": true
+    }
+  ],
+  "currentTabId": 1
+};
+
+const GRID = 10;
+
+let mode = "move";
+let selected = null;
+
+let draggingTile = null;
+let dragOffsetX = 0, dragOffsetY = 0;
+
+let isDrawing = false;
+let lastX = 0, lastY = 0;
+
+/* Touch double-tap + long-press */
+let lastTapTime = 0;
+let lastTapTile = null;
+const DOUBLE_TAP_MS = 300;
+const LONG_PRESS_MS = 700;
+let longPressTimeout = null;
+let touchMoved = false;
+let mouseMovedDuringPress = false;
+
+/* ===== TAB MANAGEMENT ===== */
+let tabs = [];
+let currentTabId = null;
+
+function initTabs() {
+  if (DEFAULT_LAYOUT && Array.isArray(DEFAULT_LAYOUT.tabs) && DEFAULT_LAYOUT.tabs.length > 0) {
+    tabs = DEFAULT_LAYOUT.tabs;
+    currentTabId = DEFAULT_LAYOUT.currentTabId || DEFAULT_LAYOUT.tabs[0].id;
+  } else {
+    tabs = [{
+      id: 1,
+      name: "Main Board",
+      bgImage: "plain worksheet.png",
+      tiles: [],
+      history: [],
+      historyIndex: -1,
+      canvasDataURL: null
+    }];
+    currentTabId = 1;
+  }
+
+  renderTabBar();
+  loadTabFromMemory(currentTabId);
+}
+
+function renderTabBar() {
+  const existingTabs = tabBar.querySelectorAll(".tab-item");
+  existingTabs.forEach(t => t.remove());
+
+  tabs.forEach(tab => {
+    const btn = document.createElement("div");
+    btn.className = "tab-item";
+    if (tab.id === currentTabId) btn.classList.add("active");
+    
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = tab.name;
+
+    nameSpan.onclick = () => switchTab(tab.id);
+    nameSpan.ondblclick = (e) => {
+      e.stopPropagation();
+      renameTab(tab.id);
+    };
+
+    btn.appendChild(nameSpan);
+
+    if (tabs.length > 1) {
+      const closeBtn = document.createElement("span");
+      closeBtn.className = "tab-close";
+      closeBtn.textContent = "×";
+      closeBtn.onclick = (e) => {
+        e.stopPropagation();
+        deleteTab(tab.id);
+      };
+      btn.appendChild(closeBtn);
+    }
+
+    tabBar.insertBefore(btn, btnAddTab);
+  });
+}
+function cloneTabTemplateByName(name) {
+  if (!DEFAULT_LAYOUT || !Array.isArray(DEFAULT_LAYOUT.tabs)) return null;
+  const base = DEFAULT_LAYOUT.tabs.find(t => t.name === name);
+  if (!base) return null;
+
+  // Deep clone
+  const copy = JSON.parse(JSON.stringify(base));
+  delete copy.id;
+  delete copy.isNotesTab;
+  copy.history = [];
+  copy.historyIndex = -1;
+  copy.canvasDataURL = null;
+
+  return copy;
+}
+
+function createTabFromTemplate(templateKey) {
+  let templateName;
+  let defaultName;
+  let defaultBg = "plain worksheet.png";
+
+  switch (templateKey) {
+    case "main":
+      templateName = "Main Board";
+      defaultName = "Main Board";
+      defaultBg = "plain worksheet.png";
+      break;
+    case "benchmarks":
+      templateName = "Benchmarks";
+      defaultName = "Benchmarks";
+      defaultBg = "blank worksheet.png";
+      break;
+    case "tactical":
+      templateName = "Tactical Worksheet";
+      defaultName = "Tactical Worksheet";
+      defaultBg = "worksheet.png";
+      break;
+    case "blank":
+    default:
+      templateName = "Blank";
+      defaultName = "Blank";
+      defaultBg = "blank worksheet.png";
+      break;
+  }
+
+  const baseClone = cloneTabTemplateByName(templateName);
+  const newId = Date.now();
+
+  const newTab = baseClone || {
+    name: defaultName,
+    bgImage: defaultBg,
+    tiles: [],
+    history: [],
+    historyIndex: -1,
+    canvasDataURL: null
+  };
+
+  newTab.id = newId;
+
+  saveCurrentTabToMemory();
+  tabs.push(newTab);
+  currentTabId = newTab.id;
+  loadTabFromMemory(newTab.id);
+  renderTabBar();
+}
+
+/*Zoom */
+function applyZoom(level) {
+  const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, level));
+  zoomLevel = clamped;
+  zoomSlider.value = Math.round(zoomLevel * 100);
+
+  // Zoom relative to top-left instead of center
+  mapWrapper.style.transformOrigin = "0 0";  // top-left
+  mapWrapper.style.transform = `scale(${zoomLevel})`;
+
+  // Don’t force auto-centering; let scroll do the work
+  mapWrapper.style.margin = "0";
+}
+
+
+if (zoomSlider) {
+  zoomSlider.addEventListener("input", () => {
+    const val = parseInt(zoomSlider.value, 10) || 100;
+    applyZoom(val / 100);
+  });
+}
+
+if (btnZoomIn) {
+  btnZoomIn.addEventListener("click", () => {
+    const current = zoomLevel;
+    applyZoom(current + 0.1);
+  });
+}
+
+if (btnZoomOut) {
+  btnZoomOut.addEventListener("click", () => {
+    const current = zoomLevel;
+    applyZoom(current - 0.1);
+  });
+}
+let isPinching = false;
+let initialPinchDistance = 0;
+let initialZoomLevel = 1;
+
+// Panning state (mouse + touch)
+let isPanning = false;
+let panStartX = 0, panStartY = 0;
+let panScrollLeft = 0, panScrollTop = 0;
+
+let isTouchPanning = false;
+let touchPanStartX = 0, touchPanStartY = 0;
+let touchPanScrollLeft = 0, touchPanScrollTop = 0;
+
+
+function getTouchDistance(t1, t2) {
+  const dx = t2.clientX - t1.clientX;
+  const dy = t2.clientY - t1.clientY;
+  return Math.hypot(dx, dy);
+}
+
+function handleWorksheetTouchStart(e) {
+  // Don't pinch/pan while drawing/checking
+  if (mode === "pen" || mode === "erase" || mode === "check") return;
+
+  // --- Two-finger pinch zoom ---
+  if (e.touches.length === 2) {
+    isPinching = true;
+    isTouchPanning = false;
+
+    initialPinchDistance = getTouchDistance(e.touches[0], e.touches[1]);
+    initialZoomLevel = zoomLevel;
+
+    // Cancel any tile drag / long-press in progress
+    draggingTile = null;
+    clearTimeout(longPressTimeout);
+
+    e.preventDefault();
+    return;
+  }
+
+  // --- One-finger pan (only when zoomed in) ---
+  if (e.touches.length === 1 && zoomLevel > 1) {
+    const target = e.target;
+
+    // If we started on a tile or the floating notes, let their own handlers run
+    if (target.closest(".unit-tile") || target.closest("#floatingNotes")) return;
+
+    const t = e.touches[0];
+    isTouchPanning = true;
+    isPinching = false;
+
+    touchPanStartX = t.clientX;
+    touchPanStartY = t.clientY;
+    touchPanScrollLeft = worksheet.scrollLeft;
+    touchPanScrollTop = worksheet.scrollTop;
+
+    e.preventDefault();
+  }
+}
+
+function handleWorksheetTouchMove(e) {
+  // --- Pinch zoom (2 fingers) ---
+  if (isPinching && e.touches.length === 2) {
+    const dist = getTouchDistance(e.touches[0], e.touches[1]);
+    if (initialPinchDistance > 0) {
+      const scaleFactor = dist / initialPinchDistance;
+      applyZoom(initialZoomLevel * scaleFactor);
+    }
+    e.preventDefault();
+    return;
+  }
+
+  // --- One-finger pan (when zoomed) ---
+  if (isTouchPanning && e.touches.length === 1 && zoomLevel > 1) {
+    const t = e.touches[0];
+    const dx = t.clientX - touchPanStartX;
+    const dy = t.clientY - touchPanStartY;
+
+    worksheet.scrollLeft = touchPanScrollLeft - dx;
+    worksheet.scrollTop  = touchPanScrollTop  - dy;
+
+    e.preventDefault();
+  }
+}
+
+function handleWorksheetTouchEnd(e) {
+  // When we drop below 2 touches, end the pinch gesture
+  if (e.touches.length < 2) {
+    isPinching = false;
+    initialPinchDistance = 0;
+  }
+
+  // If no touches left, stop panning too
+  if (e.touches.length === 0) {
+    isTouchPanning = false;
+  }
+}
+
+// Attach to the worksheet container
+worksheet.addEventListener("touchstart", handleWorksheetTouchStart, { passive: false });
+worksheet.addEventListener("touchmove",  handleWorksheetTouchMove,  { passive: false });
+worksheet.addEventListener("touchend",   handleWorksheetTouchEnd);
+worksheet.addEventListener("touchcancel",handleWorksheetTouchEnd);
+
+
+// Initialize zoom once
+applyZoom(1);
+
+function handleWorksheetMouseDown(e) {
+  // Only left-click
+  if (e.button !== 0) return;
+
+  // Don't pan while drawing/checking
+  if (mode === "pen" || mode === "erase" || mode === "check") return;
+
+  // Don't start panning from tiles or floating notes
+  if (e.target.closest(".unit-tile") || e.target.closest("#floatingNotes")) return;
+
+  // Only really useful when zoomed in
+  if (zoomLevel <= 1) return;
+
+  isPanning = true;
+  panStartX = e.clientX;
+  panStartY = e.clientY;
+  panScrollLeft = worksheet.scrollLeft;
+  panScrollTop  = worksheet.scrollTop;
+
+  worksheet.style.cursor = "grabbing";
+  e.preventDefault();
+}
+
+function handleWorksheetMouseMove(e) {
+  if (!isPanning) return;
+
+  const dx = e.clientX - panStartX;
+  const dy = e.clientY - panStartY;
+
+  worksheet.scrollLeft = panScrollLeft - dx;
+  worksheet.scrollTop  = panScrollTop  - dy;
+}
+
+function handleWorksheetMouseUp() {
+  if (!isPanning) return;
+  isPanning = false;
+  worksheet.style.cursor = "";
+}
+
+worksheet.addEventListener("mousedown", handleWorksheetMouseDown);
+document.addEventListener("mousemove", handleWorksheetMouseMove);
+document.addEventListener("mouseup", handleWorksheetMouseUp);
+
+
+
+
+function switchTab(newId) {
+  if (newId === currentTabId) return;
+  saveCurrentTabToMemory();
+  currentTabId = newId;
+  loadTabFromMemory(currentTabId);
+  renderTabBar();
+}
+
+function renameTab(tabId) {
+  const tab = tabs.find(t => t.id === tabId);
+  if (!tab) return;
+
+  const newName = prompt("Enter a new name for this tab:", tab.name || "");
+  if (newName === null) return;
+  const trimmed = newName.trim();
+  if (!trimmed) return;
+
+  tab.name = trimmed;
+  renderTabBar();
+}
+
+function deleteTab(id) {
+  // Find the tab first
+  const tab = tabs.find(t => t.id === id);
+  if (!tab) return;
+
+  // 🔒 Prevent deleting the Notes tab
+  if (tab.name && tab.name.toLowerCase() === "notes") {
+    alert("The Notes tab cannot be deleted.");
+    return;
+  }
+
+  // Don't allow deleting if it's the last remaining tab
+  if (tabs.length <= 1) return;
+
+  const confirmDelete = confirm("Are you sure you want to delete this tab?");
+  if (!confirmDelete) return;
+
+  const index = tabs.findIndex(t => t.id === id);
+  if (index === -1) return;
+
+  // Remove tab from the array
+  tabs.splice(index, 1);
+
+  // If we deleted the current tab, switch to a neighbor
+  if (id === currentTabId) {
+    const newIndex = Math.max(0, index - 1);
+    currentTabId = tabs[newIndex].id;
+    loadTabFromMemory(currentTabId);
+  }
+
+  renderTabBar();
+}
+
+
+/* Save current tab's tiles (including PAR state) */
+function saveCurrentTabToMemory() {
+  const tab = tabs.find(t => t.id === currentTabId);
+  if (!tab) return;
+
+  if (tab.isNotesTab) return; // no layout for Notes tab
+
+  const domTiles = [...mapWrapper.querySelectorAll(".unit-tile")]; 
+  tab.tiles = domTiles.map(t => {
+    const cls = [...t.classList];
+
+    const cssClass = cls.find(c =>
+      c !== "unit-tile" &&
+      c !== "selected" &&
+      c !== "par-pending" &&
+      c !== "par-complete"
+    );
+
+    let parStatus = "";
+    if (cls.includes("par-pending")) parStatus = "pending";
+    else if (cls.includes("par-complete")) parStatus = "complete";
+
+    return {
+      type: t.dataset.type,
+      cssClass,
+      left: t.style.left,
+      top: t.style.top,
+      label: t.textContent,
+      note: t.dataset.note || "",
+      parStatus
+    };
+  });
+
+  tab.canvasDataURL = drawCanvas.toDataURL();
+  tab.history = [...history];
+  tab.historyIndex = historyIndex;
+}
+
+/* Load tab from memory, including Notes tab special case + PAR */
+function loadTabFromMemory(id) {
+  const tab = tabs.find(t => t.id === id);
+  if (!tab) return;
+
+  const notesPanel = document.getElementById("notesTabPanel");
+
+  // NOTES TAB SPECIAL CASE
+  if (tab.isNotesTab) {
+    mapWrapper.style.display = "none";
+
+    [...mapWrapper.querySelectorAll(".unit-tile")].forEach(t => t.remove());
+    ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+
+    if (notesPanel) {
+      notesPanel.style.display = "block";
+      showGlobalNotesInNotesTab();
+    }
+
+    floatingNotes.style.display = "none";
+    return;
+  }
+
+  // NORMAL TABS
+  if (notesPanel) notesPanel.style.display = "none";
+  mapWrapper.style.display = "inline-block";
+
+  [...mapWrapper.querySelectorAll(".unit-tile")].forEach(t => t.remove());
+  ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+
+  worksheetImage.src = tab.bgImage;
+
+  (tab.tiles || []).forEach(d => {
+    const tile = createTileElement(d.type, d.cssClass, d.label);
+    tile.style.left = d.left;
+    tile.style.top  = d.top;
+    if (d.note) {
+      tile.dataset.note = d.note;
+      tile.title = d.note;
+    }
+
+    if (d.parStatus === "pending") {
+      tile.classList.add("par-pending");
+    } else if (d.parStatus === "complete") {
+      tile.classList.add("par-complete");
+    }
+
+    mapWrapper.appendChild(tile);
+  });
+
+  if (tab.canvasDataURL) {
+    const img = new Image();
+    img.onload = function() {
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = tab.canvasDataURL;
+  }
+
+  history = [...tab.history];
+  historyIndex = tab.historyIndex;
+
+  refreshNotesList();
+}
+
+btnAddTab.onclick = () => {
+  const name = prompt("Enter Name for new Tab:", "Sheet " + (tabs.length + 1));
+  if (!name) return;
+
+  const newTab = {
+    id: Date.now(), 
+    name: name,
+    bgImage: "plain worksheet.png",
+    tiles: [],
+    history: [],
+    historyIndex: -1,
+    canvasDataURL: null
+  };
+  
+  saveCurrentTabToMemory();
+  tabs.push(newTab);
+  currentTabId = newTab.id;
+  loadTabFromMemory(newTab.id);
+  renderTabBar();
+};
+
+/* Map Background Upload */
+btnChangeBg.onclick = () => {
+  bgUploadInput.click();
+};
+
+bgUploadInput.onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const tab = tabs.find(t => t.id === currentTabId);
+    if (tab) {
+      const dataUrl = evt.target.result;
+      tab.bgImage = dataUrl;
+      worksheetImage.src = dataUrl;
+    }
+  };
+  reader.readAsDataURL(file);
+  e.target.value = "";
+};
+
+
+/* ============================================================
+   ==========      CLEAN, FULL PAR SYSTEM BLOCK      ===========
+   ============================================================ */
+
+let parModeActive = false;
+let parCycleId = 0;
+let parLogEntries = []; // Stored PAR notes (for Notes Tab only)
+
+// Time formatting
+function formatParTime(date = new Date()) {
+  const h = String(date.getHours()).padStart(2, "0");
+  const m = String(date.getMinutes()).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+// PAR notes go ONLY to Notes Tab
+function logParNote(text) {
+  parLogEntries.push(text);
+  console.log("[PAR]", text);
+}
+
+/* Initiate PAR */
+function initiateParCycle() {
+  if (parModeActive) return;
+
+  parModeActive = true;
+  parCycleId++;
+
+  const time = formatParTime();
+  logParNote(`PAR initiated – ${time}`);
+
+  const tiles = document.querySelectorAll(".unit-tile");
+  tiles.forEach(tile => {
+    const type = (tile.dataset.type || "").toLowerCase();
+    if (type === "text" || tile.classList.contains("texttile")) return;
+
+    tile.classList.remove("par-complete");
+    tile.classList.add("par-pending");
+  });
+
+  const parBtn = document.getElementById("initParBtn");
+  if (parBtn) {
+    parBtn.textContent = "End PAR";
+    parBtn.classList.add("par-active");
+  }
+}
+
+/* End PAR */
+function endParCycle() {
+  if (!parModeActive) return;
+
+  parModeActive = false;
+
+  document.querySelectorAll(".unit-tile.par-pending")
+      .forEach(t => t.classList.remove("par-pending"));
+  document.querySelectorAll(".unit-tile.par-complete")
+      .forEach(t => t.classList.remove("par-complete"));
+
+  const time = formatParTime();
+  logParNote(`PAR complete – ${time}`);
+
+  const parBtn = document.getElementById("initParBtn");
+  if (parBtn) {
+    parBtn.textContent = "PAR";
+    parBtn.classList.remove("par-active");
+  }
+}
+
+// PAR Toggle button
+const parToggleBtn = document.getElementById("initParBtn");
+if (parToggleBtn) {
+  parToggleBtn.addEventListener("click", () => {
+    if (parModeActive) endParCycle();
+    else initiateParCycle();
+  });
+}
+
+/* Mouse Double-Click (PAR Confirm or Duplicate) */
+function handleTileDoubleClick(e) {
+  const tile = e.currentTarget;
+  const type = tile.dataset.type || "";
+  const isTextTile =
+    type.toLowerCase() === "text" || tile.classList.contains("texttile");
+
+  if (parModeActive && tile.classList.contains("par-pending") && !isTextTile) {
+    const label = tile.textContent.trim();
+    const time = formatParTime();
+
+    logParNote(`PAR – ${label} – ${time}`);
+
+    tile.classList.remove("par-pending");
+    tile.classList.add("par-complete");
+
+    saveCurrentTabToMemory();
+    return;
+  }
+
+  if (mode === "move") duplicateTileGeneric(tile);
+}
+function applyState(state) {
+  applyingState = true;
+
+  // Remove existing tiles
+  [...mapWrapper.querySelectorAll(".unit-tile")].forEach(t => t.remove());
+
+  // Rebuild tiles from the saved state
+  (state || []).forEach(d => {
+    const tile = createTileElement(d.type, d.cssClass, d.label);
+    tile.style.left = d.left;
+    tile.style.top  = d.top;
+
+    if (d.note) {
+      tile.dataset.note = d.note;
+      tile.title        = d.note;
+    }
+
+    mapWrapper.appendChild(tile);
+  });
+
+  applyingState = false;
+
+  // Keep notes and tab model in sync
+  saveCurrentTabToMemory();
+  refreshNotesList();
+}
+
+
+/* Undo/Redo (tiles only) */
+let history = [];
+let historyIndex = -1;
+let applyingState = false;
+
+function saveState() {
+  if (applyingState) return;
+  
+  const tiles = [...mapWrapper.querySelectorAll(".unit-tile")];
+  const state = tiles.map(t => ({
+    type: t.dataset.type,
+    cssClass: [...t.classList].find(c => c !== "unit-tile" && c !== "selected"),
+    left: t.style.left,
+    top: t.style.top,
+    label: t.textContent,
+    note: t.dataset.note || ""
+  }));
+
+  history = history.slice(0, historyIndex + 1);
+  history.push(state);
+  historyIndex++;
+  refreshNotesList();
+}
+
+/* Drawing undo history (canvas only) */
+let drawHistory = [];
+
+function saveDrawState() {
+  try {
+    const imgData = ctx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+    drawHistory.push(imgData);
+  } catch (e) {
+    console.warn("Could not save canvas state:", e);
+  }
+}
+
+// returns true if we actually undid a drawing action
+function undoDraw() {
+  if (drawHistory.length === 0) return false;
+
+  const imgData = drawHistory.pop();
+  ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  ctx.putImageData(imgData, 0, 0);
+  return true;
+}
+
+/* Tile undo/redo */
+function undo() {
+  if (historyIndex <= 0) return;
+  historyIndex--;
+  applyState(history[historyIndex]);
+}
+
+function redo() {
+  if (historyIndex >= history.length - 1) return;
+  historyIndex++;
+  applyState(history[historyIndex]);
+}
+
+/* Wire buttons: drawing undo first, then tiles */
+const btnUndo = document.getElementById("btnUndo");
+const btnRedo = document.getElementById("btnRedo");
+
+btnUndo.addEventListener("click", () => {
+  // 1) Try to undo drawing
+  if (undoDraw()) return;
+
+  // 2) If no drawing history, undo tiles
+  undo();
+});
+
+btnRedo.addEventListener("click", () => {
+  // (we only redo tiles for now)
+  redo();
+});
+
+
+/* Toggle Sidebar */
+btnToggleSidebar.onclick = () => {
+  sidebar.classList.toggle("hidden");
+  setTimeout(resizeCanvas, 350);
+};
+
+/* Canvas sizing */
+function resizeCanvas() {
+  const imgW = worksheetImage.width;
+  const imgH = worksheetImage.height;
+  if (imgW === 0 || imgH === 0) return; 
+  
+  if (drawCanvas.width !== imgW || drawCanvas.height !== imgH) {
+    const saved = drawCanvas.toDataURL();
+    drawCanvas.width  = imgW;
+    drawCanvas.height = imgH;
+    
+    mapWrapper.style.width = imgW + "px";
+    mapWrapper.style.height = imgH + "px";
+
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0);
+    img.src = saved;
+  }
+}
+window.addEventListener("load", resizeCanvas);
+window.addEventListener("resize", resizeCanvas);
+worksheetImage.addEventListener("load", resizeCanvas);
+
+/* Modes */
+function setMode(m) {
+  mode = m;
+  if (m === "pen" || m === "erase" || m === "check") {
+    drawCanvas.style.pointerEvents = "auto";
+  } else {
+    drawCanvas.style.pointerEvents = "none";
+  }
+
+  modeLabel.textContent =
+    "Mode: " + (m === "pen"   ? "Draw"
+             :  m === "erase" ? "Eraser"
+             :  m === "check" ? "Checkmark"
+             :  m === "note"  ? "Note"
+             :  "Move/Select");
+}
+const btnModeMove  = document.getElementById("btnModeMove");
+const btnModePen   = document.getElementById("btnModePen");
+const btnModeErase = document.getElementById("btnModeErase");
+const btnModeCheck = document.getElementById("btnModeCheck");
+const btnModeNote  = document.getElementById("btnModeNote");
+
+if (btnModeMove)  btnModeMove.onclick  = () => setMode("move");
+if (btnModePen)   btnModePen.onclick   = () => setMode("pen");
+if (btnModeErase) btnModeErase.onclick = () => setMode("erase");
+if (btnModeCheck) btnModeCheck.onclick = () => setMode("check");
+if (btnModeNote)  btnModeNote.onclick  = () => setMode("note");
+
+/* Collapsible preset groups */
+document.querySelectorAll(".collapsible-header").forEach(header => {
+  header.addEventListener("click", () => {
+    const group = header.parentElement;
+    group.classList.toggle("collapsed");
+  });
+});
+
+if (btnCollapseAll && btnExpandAll) {
+  btnCollapseAll.onclick = () => {
+    document.querySelectorAll(".collapsible-group").forEach(group => {
+      group.classList.add("collapsed");
+    });
+  };
+
+  btnExpandAll.onclick = () => {
+    document.querySelectorAll(".collapsible-group").forEach(group => {
+      group.classList.remove("collapsed");
+    });
+  };
+}
+
+/* Selection */
+function clearSelection() {
+  if (!selected) return;
+  selected.classList.remove("selected");
+  selected = null;
+}
+function select(el) {
+  clearSelection();
+  selected = el;
+  selected.classList.add("selected");
+}
+
+/* Notes Tab: global notes + PAR log */
+function showGlobalNotesInNotesTab() {
+  const notesPanel = document.getElementById("notesTabPanel");
+  if (!notesPanel) return;
+
+  notesPanel.innerHTML = "";
+  let noteCount = 0;
+
+  tabs.forEach(tab => {
+    if (tab.isNotesTab) return;
+    if (!tab.tiles || tab.tiles.length === 0) return;
+
+    tab.tiles.forEach(tileData => {
+      if (!tileData.note) return;
+
+      noteCount++;
+
+      const item = document.createElement("div");
+      item.className = "notes-tab-item";
+
+      const header = document.createElement("div");
+      header.className = "notes-tab-header";
+      header.textContent = `[${tab.name}] ${tileData.label}`;
+
+      const body = document.createElement("div");
+      body.className = "notes-tab-body";
+      body.textContent = tileData.note;
+
+      item.appendChild(header);
+      item.appendChild(body);
+
+      item.onclick = () => {
+        currentTabId = tab.id;
+        renderTabBar();
+        loadTabFromMemory(tab.id);
+
+        const candidates = [...mapWrapper.querySelectorAll(".unit-tile")];
+        const match = candidates.find(t => t.textContent.trim() === tileData.label);
+        if (match) {
+          setMode("move");
+          select(match);
+          match.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "center"
+          });
+        }
+      };
+
+      notesPanel.appendChild(item);
+    });
+  });
+
+  if (Array.isArray(parLogEntries)) {
+    parLogEntries.forEach(text => {
+      noteCount++;
+      const item = document.createElement("div");
+      item.className = "notes-tab-item";
+
+      const header = document.createElement("div");
+      header.className = "notes-tab-header";
+      header.textContent = "[PAR Log]";
+
+      const body = document.createElement("div");
+      body.className = "notes-tab-body";
+      body.textContent = text;
+
+      item.appendChild(header);
+      item.appendChild(body);
+      notesPanel.appendChild(item);
+    });
+  }
+
+  if (!noteCount) {
+    const empty = document.createElement("div");
+    empty.style.padding = "8px 4px";
+    empty.textContent = "No notes recorded yet.";
+    notesPanel.appendChild(empty);
+  }
+}
+
+/* Floating notes: current tab only */
+function refreshNotesList() {
+  notesList.innerHTML = "";
+  let noteCount = 0;
+
+  const currentTab = tabs.find(t => t.id === currentTabId);
+  if (currentTab && Array.isArray(currentTab.tiles)) {
+    currentTab.tiles.forEach(tileData => {
+      if (!tileData.note) return;
+
+      noteCount++;
+
+      const item = document.createElement("div");
+      item.className = "note-item";
+
+      const labelSpan = document.createElement("span");
+      labelSpan.className = "note-label";
+      labelSpan.textContent = `${tileData.label}:`;
+
+      const noteSpan = document.createElement("span");
+      noteSpan.className = "note-text";
+      noteSpan.textContent = " " + tileData.note;
+
+      item.appendChild(labelSpan);
+      item.appendChild(noteSpan);
+
+      item.onclick = () => {
+        if (currentTabId !== currentTab.id) {
+          saveCurrentTabToMemory();
+          currentTabId = currentTab.id;
+          renderTabBar();
+          loadTabFromMemory(currentTab.id);
+        }
+
+        const tiles = [...mapWrapper.querySelectorAll(".unit-tile")];
+        const match = tiles.find(t => t.textContent.trim() === tileData.label);
+        if (match) {
+          setMode("move");
+          select(match);
+          match.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "center"
+          });
+        }
+      };
+
+      notesList.appendChild(item);
+    });
+  }
+
+  const notesBox = document.getElementById("floatingNotes");
+  if (notesBox) {
+    notesBox.style.display = noteCount > 0 ? "block" : "none";
+  }
+}
+
+/* Layout Save / Load */
+function getCurrentLayout() {
+  saveCurrentTabToMemory(); 
+  return {
+    tabs: tabs,
+    currentTabId: currentTabId
+  };
+}
+
+btnSaveLayout.onclick = () => {
+  const layout = getCurrentLayout();
+  const json   = JSON.stringify(layout, null, 2);
+  const blob   = new Blob([json], { type: "application/json" });
+
+  const now  = new Date();
+  const pad  = n => String(n).padStart(2, "0");
+  const defName = `ic_layout_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+
+  let userName = prompt("Enter a file name for this layout:", defName);
+  if (userName === null) return;
+  userName = userName.trim();
+  if (!userName) userName = defName;
+
+  userName = userName.replace(/[\\\/:*?"<>|]/g, "_");
+
+  if (!userName.toLowerCase().endsWith(".json")) {
+    userName += ".json";
+  }
+
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = userName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+btnLoadLayout.onclick = () => {
+  loadFileInput.click();
+};
+
+loadFileInput.onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const data = JSON.parse(evt.target.result);
+      
+      if (Array.isArray(data.tiles)) {
+        history = [];
+        historyIndex = -1;
+        applyState(data.tiles);
+        saveState();
+        alert("Loaded legacy layout into current tab.");
+      } else if (data.tabs) {
+        tabs = data.tabs;
+        currentTabId = data.currentTabId || tabs[0].id;
+        loadTabFromMemory(currentTabId);
+        renderTabBar();
+      } else {
+        alert("Invalid layout file.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Could not read layout file.");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+};
+
+/* Notes on tiles */
+function openNotePrompt(tile) {
+  const stored = tile.dataset.note || "";
+  const label  = tile.textContent;
+
+  const currentPlain = stored.replace(/^\[\d{2}:\d{2}\]\s*/, "");
+
+  const input = prompt(
+    `Enter note for ${label}:\n(Leave blank to clear)`,
+    currentPlain
+  );
+
+  if (input !== null) {
+    const trimmed = input.trim();
+
+    if (trimmed) {
+      const now  = new Date();
+      const pad2 = n => String(n).padStart(2, "0");
+      const timeStr = `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+
+      const finalNote = `[${timeStr}] ${trimmed}`;
+
+      tile.dataset.note = finalNote;
+      tile.title        = finalNote;
+    } else {
+      delete tile.dataset.note;
+      tile.title = "";
+    }
+
+    saveState();
+    saveCurrentTabToMemory();
+    refreshNotesList();   
+  }
+
+  setMode("move");
+}
+
+/* Spawn location: one fixed slot per type */
+function placeTileInStackPosition(tile) {
+  const type = (tile.dataset.type || "").toLowerCase();
+
+  if (type === "text" || type === "label") {
+    tile.style.left = "10px";
+    tile.style.top  = "10px";
+    return;
+  }
+
+  const colX = {
+    engine: 20,
+    tower:  200,
+    rescue: 380,
+    rit:    560,
+    chief:  740,
+    other:  920
+  };
+  const topMargin = 20;
+
+  const x = colX[type];
+  if (x === undefined) {
+    tile.style.left = "10px";
+    tile.style.top  = "10px";
+    return;
+  }
+
+  tile.style.left = x + "px";
+  tile.style.top  = topMargin + "px";
+}
+
+/* Tile creation */
+function createTileElement(type, cssClass, text) {
+  const tile = document.createElement("div");
+  const lower = (type || "").toLowerCase();
+
+  if (lower === "text") {
+    tile.className = "unit-tile texttile";
+    tile.dataset.type = "text";
+    tile.textContent = text;
+  }
+  else if (lower === "label") {
+    tile.className = "unit-tile label";
+    tile.dataset.type = "Label";
+    tile.dataset.permanent = "true";
+    tile.textContent = text;
+  }
+  else {
+    tile.className = "unit-tile " + cssClass;
+    tile.dataset.type = type;
+    tile.textContent = text;
+  }
+
+  placeTileInStackPosition(tile);
+
+  tile.addEventListener("mousedown", startTileDragMouse);
+  tile.addEventListener("touchstart", startTileDragTouch, { passive: false });
+  tile.ondblclick = handleTileDoubleClick;
+
+  return tile;
+}
+
+function createTile(type, cssClass) {
+  const label = prompt(`Enter ${type} label:`);
+  if (!label) return;
+  const tile = createTileElement(type, cssClass, label.trim());
+  mapWrapper.appendChild(tile);
+  select(tile);
+  saveState();
+}
+
+document.getElementById("btnEngine").onclick = () => createTile("Engine","engine");
+document.getElementById("btnTower").onclick  = () => createTile("Tower","tower");
+document.getElementById("btnRescue").onclick = () => createTile("Rescue","rescue");
+document.getElementById("btnChief").onclick  = () => createTile("Chief","chief");
+document.getElementById("btnRIT").onclick    = () => createTile("RIT","rit");
+document.getElementById("btnOther").onclick  = () => createTile("Other","other");
+document.getElementById("btnText").onclick   = () => createTile("Text","texttile");
+
+/* Help Button */
+document.getElementById("btnHelp").onclick = () => {
+  window.open("Digital Tactical Worksheets Manual.txt", "_blank");
+};
+
+/* Fullscreen */
+const btnFullscreen = document.getElementById("btnFullscreen");
+if (btnFullscreen) {
+  btnFullscreen.addEventListener("click", () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.log("Fullscreen failed:", err);
+      });
+      btnFullscreen.textContent = "Exit Fullscreen";
+    } else {
+      document.exitFullscreen();
+      btnFullscreen.textContent = "Fullscreen";
+    }
+  });
+}
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    btnFullscreen.textContent = "Fullscreen";
+  } else {
+    btnFullscreen.textContent = "Exit Fullscreen";
+  }
+});
+
+/* Presets */
+function spawnPreset(type, cssClass, label) {
+  const tile = createTileElement(type, cssClass, label);
+  mapWrapper.appendChild(tile);
+  select(tile);
+  saveState();
+}
+function buildPresetButtons(targetId, labels, type, cssClass, btnClass) {
+  const container = document.getElementById(targetId);
+  labels.forEach(lbl => {
+    const b = document.createElement("button");
+    b.className = "preset-button " + btnClass;
+    b.textContent = lbl;
+    b.onclick = () => spawnPreset(type, cssClass, lbl);
+    container.appendChild(b);
+  });
+}
+
+buildPresetButtons("enginePresets", [
+  "E-1","E-2","E-3","E-4","E-5",
+  "E-6","E-7","E-8","E-9","E-10",
+  "E-11","E-12","E-13","E-14","E-15",
+  "E-16","E-17","E-18","E-19","E-101"
+], "Engine","engine","preset-engine");
+
+buildPresetButtons("towerPresets", [
+  "T-1","T-2","T-6","T-8",
+  "T-9","T-10","T-11","T-15"
+], "Tower","tower","preset-tower");
+
+buildPresetButtons("rescuePresets", [
+  "R-1","R-2","R-3","R-6","R-7",
+  "R-8","R-9","R-10","R-11",
+  "R-12","R-15"
+], "Rescue","rescue","preset-rescue");
+
+buildPresetButtons("ritPresets", [
+  "HR-1","HAZ-1", "HR-1 Outside","HAZ-1 Outside"
+], "RIT","rit","preset-rit");
+
+buildPresetButtons("chiefPresets", [
+  "D-1","D-2","D-3","D-4",
+  "D-5","D-6","EMS-1","AC-1"
+], "Chief","chief","preset-chief");
+
+buildPresetButtons("towerOutsidePresets", [
+  "T-1 Outside","T-2 Outside","T-6 Outside","T-8 Outside",
+  "T-9 Outside","T-10 Outside","T-11 Outside","T-15 Outside"
+], "Tower","tower","preset-tower");
+
+buildPresetButtons("medicUnitPresets", [
+  "M102","M141", "M161", "M171","M201","M601", "M801"
+], "Rescue","rescue","preset-rescue");
+
+/* Tile drag: mouse */
+function startTileDragMouse(e) {
+  const tile = e.currentTarget;
+
+  if (mode === "note") {
+    openNotePrompt(tile);
+    e.preventDefault();
+    return;
+  }
+
+  if (mode !== "move") setMode("move");
+  if (mode !== "move") return;
+
+  select(tile);
+
+  const r = tile.getBoundingClientRect();
+  dragOffsetX = e.clientX - r.left;
+  dragOffsetY = e.clientY - r.top;
+
+  draggingTile = tile;
+  mouseMovedDuringPress = false;
+
+  clearTimeout(longPressTimeout);
+  longPressTimeout = setTimeout(() => {
+    if (!mouseMovedDuringPress && draggingTile === tile) {
+      openNotePrompt(tile);
+      draggingTile = null;
+    }
+  }, LONG_PRESS_MS);
+
+  document.addEventListener("mousemove", tileDragMouse);
+  document.addEventListener("mouseup", stopTileDragMouse);
+  e.preventDefault();
+}
+
+function tileDragMouse(e) {
+  if (!draggingTile) return;
+  mouseMovedDuringPress = true;
+
+  const ws = mapWrapper.getBoundingClientRect();
+ let x = (e.clientX - ws.left - dragOffsetX) / zoomLevel;
+let y = (e.clientY - ws.top  - dragOffsetY) / zoomLevel;
+
+x = Math.round(x / GRID) * GRID;
+y = Math.round(y / GRID) * GRID;
+
+draggingTile.style.left = x + "px";
+draggingTile.style.top  = y + "px";
+
+}
+function stopTileDragMouse() {
+  clearTimeout(longPressTimeout);
+  if (draggingTile) saveState();
+  draggingTile = null;
+  document.removeEventListener("mousemove", tileDragMouse);
+  document.removeEventListener("mouseup", stopTileDragMouse);
+}
+
+/* Tile drag: touch */
+function startTileDragTouch(e) {
+  const tile = e.currentTarget;
+
+  // Multi-touch → likely pinch, do not start a drag
+  if (e.touches.length > 1) return;
+
+  if (mode === "note") {
+    openNotePrompt(tile);
+    e.preventDefault();
+    return;
+  }
+
+  if (mode !== "move") setMode("move");
+  if (mode !== "move") return;
+
+  select(tile);
+  touchMoved = false;
+
+  const touch = e.touches[0];
+  const r = tile.getBoundingClientRect();
+
+  // Correct drag offsets
+  dragOffsetX = touch.clientX - r.left;
+  dragOffsetY = touch.clientY - r.top;
+
+  draggingTile = tile;
+
+  clearTimeout(longPressTimeout);
+  longPressTimeout = setTimeout(() => {
+    if (!touchMoved && draggingTile === tile) {
+      openNotePrompt(tile);
+      draggingTile = null;
+    }
+  }, LONG_PRESS_MS);
+
+  document.addEventListener("touchmove", tileDragTouch, { passive: false });
+  document.addEventListener("touchend", stopTileDragTouch, { passive: false });
+
+  e.preventDefault();
+}
+
+function tileDragTouch(e) {
+  if (!draggingTile) return;
+  touchMoved = true;
+
+  // If pinch is happening, stop dragging
+  if (e.touches.length > 1) return;
+
+  const touch = e.touches[0];
+  const ws = mapWrapper.getBoundingClientRect();
+
+  // Smooth movement — include zoomLevel!
+  let x = (touch.clientX - ws.left - dragOffsetX) / zoomLevel;
+  let y = (touch.clientY - ws.top  - dragOffsetY) / zoomLevel;
+
+  // Do NOT snap to grid during the drag → this causes choppiness
+  draggingTile.style.left = x + "px";
+  draggingTile.style.top  = y + "px";
+
+  e.preventDefault();
+}
+
+function stopTileDragTouch(e) {
+  clearTimeout(longPressTimeout);
+
+  // Handle double-tap logic
+  if (!touchMoved && draggingTile) {
+    const now = Date.now();
+
+    if (lastTapTile === draggingTile && (now - lastTapTime) < DOUBLE_TAP_MS) {
+      const tile = draggingTile;
+      const type = tile.dataset.type || "";
+      const isTextTile =
+        type.toLowerCase() === "text" || tile.classList.contains("texttile");
+
+      if (parModeActive && tile.classList.contains("par-pending") && !isTextTile) {
+        const labelFromData = tile.dataset.label || tile.dataset.unit || "";
+        const unitLabel = labelFromData || tile.textContent.trim();
+        const time = formatParTime();
+
+        logParNote(`PAR – ${unitLabel} – ${time}`);
+        tile.classList.remove("par-pending");
+        tile.classList.add("par-complete");
+      } else {
+        if (mode === "move") duplicateTileGeneric(tile);
+      }
+
+      lastTapTile = null;
+    } else {
+      lastTapTile = draggingTile;
+      lastTapTime = now;
+    }
+  }
+
+  // Snap to grid ONCE after drag ends
+  if (draggingTile && touchMoved) {
+    let x = parseFloat(draggingTile.style.left) || 0;
+    let y = parseFloat(draggingTile.style.top)  || 0;
+
+    x = Math.round(x / GRID) * GRID;
+    y = Math.round(y / GRID) * GRID;
+
+    draggingTile.style.left = x + "px";
+    draggingTile.style.top  = y + "px";
+
+    saveState();
+  }
+
+  draggingTile = null;
+
+  document.removeEventListener("touchmove", tileDragTouch);
+  document.removeEventListener("touchend", stopTileDragTouch);
+}
+
+
+/* Duplicate tile */
+function duplicateTileGeneric(orig) {
+  const r = orig.getBoundingClientRect();
+  const ws = mapWrapper.getBoundingClientRect();
+  const left = r.left - ws.left;
+  const top  = r.top  - ws.top;
+
+  const cssClass = [...orig.classList].find(c => c !== "unit-tile" && c !== "selected");
+  const dup = createTileElement(orig.dataset.type, cssClass, orig.textContent);
+  dup.style.left = (left + 20) + "px";
+  dup.style.top  = (top  + 20) + "px";
+
+  mapWrapper.appendChild(dup);
+  select(dup);
+  saveState();
+}
+
+/* Checkmark drawing */
+function drawCheckmark(x, y) {
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.strokeStyle = "red";
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(x - 6, y);
+  ctx.lineTo(x - 2, y + 6);
+  ctx.lineTo(x + 8, y - 6);
+  ctx.stroke();
+  ctx.restore();
+}
+
+
+/* Drawing: mouse */
+drawCanvas.addEventListener("mousedown", e => {
+  const { x, y } = getCanvasCoordsFromMouseEvent(e);
+
+  if (mode === "check") {
+    saveDrawState();
+    drawCheckmark(x, y);
+    return;
+  }
+
+  if (mode !== "pen" && mode !== "erase") return;
+
+  saveDrawState();
+  isDrawing = true;
+  lastX = x;
+  lastY = y;
+});
+
+
+drawCanvas.addEventListener("mousemove", e => {
+  if (!isDrawing) return;
+  if (mode !== "pen" && mode !== "erase") return;
+
+  const { x, y } = getCanvasCoordsFromMouseEvent(e);
+
+  if (mode === "pen") {
+    ctx.globalCompositeOperation = "source-over";
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "red";
+  } else if (mode === "erase") {
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.lineWidth = 15;
+    ctx.strokeStyle = "rgba(0,0,0,1)";
+  }
+
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+
+  lastX = x;
+  lastY = y;
+});
+
+
+drawCanvas.addEventListener("mouseup", () => {
+  isDrawing = false;
+  ctx.globalCompositeOperation = "source-over";
+});
+drawCanvas.addEventListener("mouseleave", () => {
+  isDrawing = false;
+  ctx.globalCompositeOperation = "source-over";
+});
+
+
+/* Drawing: touch */
+drawCanvas.addEventListener("touchstart", e => {
+  const { x, y } = getCanvasCoordsFromTouchEvent(e);
+
+  if (mode === "check") {
+    e.preventDefault();
+    saveDrawState();
+    drawCheckmark(x, y);
+    return;
+  }
+
+  if (mode !== "pen" && mode !== "erase") return;
+  e.preventDefault();
+
+  saveDrawState();
+  isDrawing = true;
+  lastX = x;
+  lastY = y;
+}, { passive: false });
+
+drawCanvas.addEventListener("touchmove", e => {
+  if (!isDrawing) return;
+  if (mode !== "pen" && mode !== "erase") return;
+  e.preventDefault();
+
+  const { x, y } = getCanvasCoordsFromTouchEvent(e);
+
+  if (mode === "pen") {
+    ctx.globalCompositeOperation = "source-over";
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "red";
+  } else if (mode === "erase") {
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.lineWidth = 20;
+    ctx.strokeStyle = "rgba(0,0,0,1)";
+  }
+
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+
+  lastX = x;
+  lastY = y;
+}, { passive: false });
+
+
+drawCanvas.addEventListener("touchmove", e => {
+  if (!isDrawing) return;
+  if (mode !== "pen" && mode !== "erase") return;
+  e.preventDefault();
+
+  const t = e.touches[0];
+  const r = drawCanvas.getBoundingClientRect();
+  const x = t.clientX - r.left;
+  const y = t.clientY - r.top;
+
+  if (mode === "pen") {
+    ctx.globalCompositeOperation = "source-over";
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "red";
+  } else if (mode === "erase") {
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.lineWidth = 20;
+    ctx.strokeStyle = "rgba(0,0,0,1)";
+  }
+
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+
+  lastX = x;
+  lastY = y;
+}, { passive: false });
+
+drawCanvas.addEventListener("touchend", () => {
+  isDrawing = false;
+  ctx.globalCompositeOperation = "source-over";
+});
+drawCanvas.addEventListener("touchcancel", () => {
+  isDrawing = false;
+  ctx.globalCompositeOperation = "source-over";
+});
+
+
+/* Delete selected */
+document.getElementById("btnDelete").onclick = () => {
+  if (!selected) return;
+  selected.remove();
+  selected = null;
+  saveState();
+};
+
+/* Auto Stack */
+document.getElementById("btnAutoStack").onclick = () => {
+  const colX = {
+    engine: 20,
+    tower:  200,
+    rescue: 380,
+    rit:    560,
+    chief:  740,
+    other:  920
+  };
+  const verticalSpacing = 28;
+  const topMargin = 20;
+
+  const stacks = {
+    engine: [],
+    tower: [],
+    rescue: [],
+    rit: [],
+    chief: [],
+    other: []
+  };
+
+  const tiles = [...mapWrapper.querySelectorAll(".unit-tile")];
+  tiles.forEach(t => {
+    const type = (t.dataset.type || "").toLowerCase();
+    if (type === "text") return;
+
+    if      (type === "engine") stacks.engine.push(t);
+    else if (type === "tower")  stacks.tower.push(t);
+    else if (type === "rescue") stacks.rescue.push(t);
+    else if (type === "rit")    stacks.rit.push(t);
+    else if (type === "chief")  stacks.chief.push(t);
+    else                        stacks.other.push(t);
+  });
+
+  Object.entries(stacks).forEach(([key, list]) => {
+    let x = colX[key];
+    if (x === undefined) return;
+    list.forEach((tile, idx) => {
+      tile.style.left = x + "px";
+      tile.style.top  = (topMargin + idx * verticalSpacing) + "px";
+    });
+  });
+
+  saveState();
+};
+
+/* ===== Floating Notes drag (fixed, clamped, unified) ===== */
+
+let notesDrag = false;
+let notesOffsetX = 0, notesOffsetY = 0;
+
+/* Mouse start */
+floatingNotesHeader.addEventListener("mousedown", e => {
+  notesDrag = true;
+  notesOffsetX = e.clientX - floatingNotes.offsetLeft;
+  notesOffsetY = e.clientY - floatingNotes.offsetTop;
+  floatingNotes.classList.add("dragging");
+  e.preventDefault();
+});
+
+/* Mouse move (clamped) */
+document.addEventListener("mousemove", e => {
+  if (!notesDrag) return;
+
+  const headerHeight = floatingNotesHeader.offsetHeight || 30;
+  const margin = 8;
+
+  let newLeft = e.clientX - notesOffsetX;
+  let newTop  = e.clientY - notesOffsetY;
+
+  const maxLeft = window.innerWidth - floatingNotes.offsetWidth - margin;
+  newLeft = Math.max(margin, Math.min(maxLeft, newLeft));
+
+  const maxTop = window.innerHeight - headerHeight - margin;
+  newTop = Math.max(margin, Math.min(maxTop, newTop));
+
+  floatingNotes.style.left = newLeft + "px";
+  floatingNotes.style.top  = newTop  + "px";
+});
+
+/* Mouse end */
+document.addEventListener("mouseup", () => {
+  notesDrag = false;
+  floatingNotes.classList.remove("dragging");
+});
+
+/* Touch start */
+floatingNotesHeader.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  notesDrag = true;
+  notesOffsetX = t.clientX - floatingNotes.offsetLeft;
+  notesOffsetY = t.clientY - floatingNotes.offsetTop;
+  floatingNotes.classList.add("dragging");
+  e.preventDefault();
+}, { passive: false });
+
+/* Touch move (clamped) */
+document.addEventListener("touchmove", e => {
+  if (!notesDrag) return;
+
+  const t = e.touches[0];
+  const headerHeight = floatingNotesHeader.offsetHeight || 30;
+  const margin = 8;
+
+  let newLeft = t.clientX - notesOffsetX;
+  let newTop  = t.clientY - notesOffsetY;
+
+  const maxLeft = window.innerWidth - floatingNotes.offsetWidth - margin;
+  newLeft = Math.max(margin, Math.min(maxLeft, newLeft));
+
+  const maxTop = window.innerHeight - headerHeight - margin;
+  newTop = Math.max(margin, Math.min(maxTop, newTop));
+
+  floatingNotes.style.left = newLeft + "px";
+  floatingNotes.style.top  = newTop  + "px";
+
+  e.preventDefault();
+}, { passive: false });
+
+/* Touch end */
+document.addEventListener("touchend", () => {
+  notesDrag = false;
+  floatingNotes.classList.remove("dragging");
+});
+
+/* Init */
+initTabs(); 
+setMode("move");
+saveState();
+</script>
+
+
+<div style="position:absolute; bottom:4px; right:8px; font-size:10px; color:#bbb;">
+  Digital Tactical Worksheet v1.0 Created by Daniel Romano
+</div>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("service-worker.js")
+        .catch(err => {
+          console.error("Service worker registration failed:", err);
+        });
+    });
+  }
+</script>
+
+</body>
+</html>
+
+
+
