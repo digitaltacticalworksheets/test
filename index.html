@@ -1132,21 +1132,27 @@ function createTabFromTemplate(templateKey) {
   renderTabBar();
 }
 
-/*Zoom */
+/* ===== Zoom & Pan ===== */
+
+// Reuse existing zoomLevel, MIN_ZOOM, MAX_ZOOM, zoomSlider, mapWrapper, worksheet
+
 function applyZoom(level) {
   const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, level));
   zoomLevel = clamped;
-  zoomSlider.value = Math.round(zoomLevel * 100);
 
-  // Zoom relative to top-left instead of center
-  mapWrapper.style.transformOrigin = "0 0";  // top-left
+  if (zoomSlider) {
+    zoomSlider.value = Math.round(zoomLevel * 100);
+  }
+
+  // Zoom relative to top-left so you can pan to top-left cleanly
+  mapWrapper.style.transformOrigin = "0 0";
   mapWrapper.style.transform = `scale(${zoomLevel})`;
 
-  // Don’t force auto-centering; let scroll do the work
+  // Let scrolling do the positioning
   mapWrapper.style.margin = "0";
 }
 
-
+// Slider + buttons
 if (zoomSlider) {
   zoomSlider.addEventListener("input", () => {
     const val = parseInt(zoomSlider.value, 10) || 100;
@@ -1156,22 +1162,21 @@ if (zoomSlider) {
 
 if (btnZoomIn) {
   btnZoomIn.addEventListener("click", () => {
-    const current = zoomLevel;
-    applyZoom(current + 0.1);
+    applyZoom(zoomLevel + 0.1);
   });
 }
 
 if (btnZoomOut) {
   btnZoomOut.addEventListener("click", () => {
-    const current = zoomLevel;
-    applyZoom(current - 0.1);
+    applyZoom(zoomLevel - 0.1);
   });
 }
+
+// Pinch + pan state
 let isPinching = false;
 let initialPinchDistance = 0;
 let initialZoomLevel = 1;
 
-// Panning state (mouse + touch)
 let isPanning = false;
 let panStartX = 0, panStartY = 0;
 let panScrollLeft = 0, panScrollTop = 0;
@@ -1180,12 +1185,27 @@ let isTouchPanning = false;
 let touchPanStartX = 0, touchPanStartY = 0;
 let touchPanScrollLeft = 0, touchPanScrollTop = 0;
 
+// Helper: only pan when touching the background, not tiles or notes window
+function isBackgroundTarget(target) {
+  if (!target) return false;
+  if (target.closest(".unit-tile")) return false;
+  if (target.closest("#floatingNotes")) return false;
+
+  return (
+    target === worksheet ||
+    target === mapWrapper ||
+    target === worksheetImage ||
+    target === drawCanvas
+  );
+}
 
 function getTouchDistance(t1, t2) {
   const dx = t2.clientX - t1.clientX;
   const dy = t2.clientY - t1.clientY;
   return Math.hypot(dx, dy);
 }
+
+/* ===== TOUCH: pinch + one-finger pan (any zoom) ===== */
 
 function handleWorksheetTouchStart(e) {
   // Don't pinch/pan while drawing/checking
@@ -1207,21 +1227,17 @@ function handleWorksheetTouchStart(e) {
     return;
   }
 
-  // --- One-finger pan (only when zoomed in) ---
-  if (e.touches.length === 1 && zoomLevel > 1) {
-    const target = e.target;
-
-    // If we started on a tile or the floating notes, let their own handlers run
-    if (target.closest(".unit-tile") || target.closest("#floatingNotes")) return;
-
+  // --- One-finger pan (at ANY zoom level) ---
+  if (e.touches.length === 1 && isBackgroundTarget(e.target)) {
     const t = e.touches[0];
+
     isTouchPanning = true;
     isPinching = false;
 
     touchPanStartX = t.clientX;
     touchPanStartY = t.clientY;
     touchPanScrollLeft = worksheet.scrollLeft;
-    touchPanScrollTop = worksheet.scrollTop;
+    touchPanScrollTop  = worksheet.scrollTop;
 
     e.preventDefault();
   }
@@ -1239,8 +1255,8 @@ function handleWorksheetTouchMove(e) {
     return;
   }
 
-  // --- One-finger pan (when zoomed) ---
-  if (isTouchPanning && e.touches.length === 1 && zoomLevel > 1) {
+  // --- One-finger pan (any zoom) ---
+  if (isTouchPanning && e.touches.length === 1) {
     const t = e.touches[0];
     const dx = t.clientX - touchPanStartX;
     const dy = t.clientY - touchPanStartY;
@@ -1271,9 +1287,10 @@ worksheet.addEventListener("touchmove",  handleWorksheetTouchMove,  { passive: f
 worksheet.addEventListener("touchend",   handleWorksheetTouchEnd);
 worksheet.addEventListener("touchcancel",handleWorksheetTouchEnd);
 
-
 // Initialize zoom once
 applyZoom(1);
+
+/* ===== MOUSE: click + drag pan (any zoom) ===== */
 
 function handleWorksheetMouseDown(e) {
   // Only left-click
@@ -1282,11 +1299,8 @@ function handleWorksheetMouseDown(e) {
   // Don't pan while drawing/checking
   if (mode === "pen" || mode === "erase" || mode === "check") return;
 
-  // Don't start panning from tiles or floating notes
-  if (e.target.closest(".unit-tile") || e.target.closest("#floatingNotes")) return;
-
-  // Only really useful when zoomed in
-  if (zoomLevel <= 1) return;
+  // Only pan if we started on background, not tiles/notes
+  if (!isBackgroundTarget(e.target)) return;
 
   isPanning = true;
   panStartX = e.clientX;
