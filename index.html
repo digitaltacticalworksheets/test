@@ -958,14 +958,15 @@
   // existing JS...
 </script>
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
 
 <script>
    const firebaseConfig = {
     apiKey: "AIzaSyDwnykQnBA9PD84qdImwjKtHT4sP2LeJ_0",
     authDomain: "dtw-realtime.firebaseapp.com",
+    databaseURL: "https://dtw-realtime.firebaseio.com"
     projectId: "dtw-realtime",
     storageBucket: "dtw-realtime.firebasestorage.app",
     messagingSenderId: "894225586448",
@@ -3321,4 +3322,5 @@ saveState();
 
 </body>
 </html>
+
 
