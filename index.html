@@ -782,7 +782,7 @@
     <div id="mapWrapper">
       <img
         id="worksheetImage"
-        src="plain worksheet.png"
+        src="worksheet2.png"
         alt="Worksheet"
       />
       <canvas id="drawCanvas"></canvas>
@@ -902,54 +902,22 @@ const DEFAULT_LAYOUT = {
     {
       "id": 1,
       "name": "Main Board",
-      "bgImage": "plain worksheet.png",
+      "bgImage": "worksheet2.png",
       "tiles": [
-        { "type":"text","cssClass":"texttile","left":"840px","top":"580px","label":"SIDE A","note":"" },
-        { "type":"text","cssClass":"texttile","left":"830px","top":"250px","label":"SIDE C","note":"" },
-        { "type":"text","cssClass":"texttile","left":"1040px","top":"420px","label":"SIDE D","note":"" },
-        { "type":"text","cssClass":"texttile","left":"610px","top":"410px","label":"SIDE B","note":"" },
-        { "type":"text","cssClass":"texttile","left":"-10px","top":"-10px","label":"DISPATCHED UNITS","note":"" },
-        { "type":"text","cssClass":"texttile","left":"60px","top":"170px","label":"ON SCENE","note":"" }
+        { "type":"text","cssClass":"texttile","left":"520px","top":"580px","label":"Side A","note":"" },
+        { "type":"text","cssClass":"texttile","left":"520px","top":"230px","label":"Side C","note":"" },
+        { "type":"text","cssClass":"texttile","left":"1040px","top":"400px","label":"Side D","note":"" },
+        { "type":"text","cssClass":"texttile","left":"310px","top":"400px","label":"Side B","note":"" },
+        { "type":"text","cssClass":"texttile","left":"0px","top":"-10px","label":"Dispatched Units","note":"" },
+        { "type":"text","cssClass":"texttile","left":"0px","top":"120px","label":"On Scene","note":"" }
+        { "type":"text","cssClass":"texttile","left":"0px","top":"520px","label":"Rehab","note":"" }
       ],
       "history": [],
       "historyIndex": -1,
       "canvasDataURL": null
     },
-    {
+       {
       "id": 2,
-      "name": "Benchmarks",
-      "bgImage": "blank worksheet.png",
-      "tiles": [
-        { "type":"Engine","cssClass":"engine","left":"20px","top":"20px","label":"Water on the fire","note":"" },
-        { "type":"Engine","cssClass":"engine","left":"20px","top":"48px","label":"Water Supply","note":"" },
-        { "type":"Engine","cssClass":"engine","left":"20px","top":"76px","label":"Fire Knocked Down","note":"" },
-        { "type":"Engine","cssClass":"engine","left":"20px","top":"104px","label":"Fire Out","note":"" },
-
-        { "type":"Tower","cssClass":"tower","left":"200px","top":"20px","label":"Primary Search","note":"" },
-        { "type":"Tower","cssClass":"tower","left":"200px","top":"48px","label":"2nd egress/ladders","note":"" },
-        { "type":"Tower","cssClass":"tower","left":"200px","top":"76px","label":"Secondary Search","note":"" },
-        { "type":"Tower","cssClass":"tower","left":"200px","top":"104px","label":"Primary Vent","note":"" },
-
-        { "type":"Rescue","cssClass":"rescue","left":"380px","top":"20px","label":"2-out","note":"" },
-        { "type":"Rescue","cssClass":"rescue","left":"380px","top":"48px","label":"Ready Rescue","note":"" },
-        { "type":"Rescue","cssClass":"rescue","left":"380px","top":"76px","label":"Rehab","note":"" },
-
-        { "type":"RIT","cssClass":"rit","left":"560px","top":"20px","label":"RIT Established","note":"" },
-        { "type":"RIT","cssClass":"rit","left":"560px","top":"48px","label":"Elec. Utilities","note":"" },
-        { "type":"RIT","cssClass":"rit","left":"560px","top":"76px","label":"Gas Utilities","note":"" },
-
-        { "type":"Chief","cssClass":"chief","left":"740px","top":"20px","label":"Safety Officer","note":"" },
-
-        { "type":"Other","cssClass":"other","left":"920px","top":"20px","label":"Fire Pump/FDC","note":"" },
-        { "type":"Other","cssClass":"other","left":"920px","top":"48px","label":"Salvage","note":"" },
-        { "type":"Other","cssClass":"other","left":"920px","top":"76px","label":"Overhaul","note":"" }
-      ],
-      "history": [],
-      "historyIndex": -1,
-      "canvasDataURL": null
-    },
-    {
-      "id": 3,
       "name": "Tactical Worksheet",
       "bgImage": "worksheet.png",
       "tiles": [],
@@ -1016,7 +984,7 @@ function initTabs() {
     tabs = [{
       id: 1,
       name: "Main Board",
-      bgImage: "plain worksheet.png",
+      bgImage: "worksheet2.png",
       tiles: [],
       history: [],
       historyIndex: -1,
@@ -1082,13 +1050,13 @@ function cloneTabTemplateByName(name) {
 function createTabFromTemplate(templateKey) {
   let templateName;
   let defaultName;
-  let defaultBg = "plain worksheet.png";
+  let defaultBg = "worksheet2.png";
 
   switch (templateKey) {
     case "main":
       templateName = "Main Board";
       defaultName = "Main Board";
-      defaultBg = "plain worksheet.png";
+      defaultBg = "worksheet2.png";
       break;
     case "benchmarks":
       templateName = "Benchmarks";
@@ -1505,7 +1473,7 @@ btnAddTab.onclick = () => {
   const newTab = {
     id: Date.now(), 
     name: name,
-    bgImage: "plain worksheet.png",
+    bgImage: "worksheet2.png",
     tiles: [],
     history: [],
     historyIndex: -1,
@@ -2863,4 +2831,5 @@ saveState();
 
 </body>
 </html>
+
 
