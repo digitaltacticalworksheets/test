@@ -658,6 +658,129 @@
   color: #fff;
   height: calc(100vh - 120px); /* adjust for toolbar & tabs */
 }
+#sidebarHeader {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+/* Sidebar tab buttons (Units / Benchmarks) */
+.sidebar-tab {
+  flex: 1;
+  padding: 6px 6px;         /* bigger touch target */
+  font-size: 13px;            /* larger text */
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #333333;
+  color: #eee;
+  cursor: pointer;
+}
+
+
+.sidebar-tab.active {
+  background: #555;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Benchmarks sidebar styles */
+.benchmarks-category {
+  margin-bottom: 10px;
+}
+
+.benchmarks-category-title {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: #fff;
+}
+
+.benchmarks-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* Base benchmark button */
+.benchmark-btn {
+  border: none;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Initial colors */
+.bm-red {
+  background: #b00020;
+  color: #fff;
+}
+
+.bm-blue {
+  background: #1565c0;
+  color: #fff;
+}
+
+.bm-orange {
+  background: #ef6c00;
+  color: #fff;
+}
+
+.bm-white {
+  background: #e0e0e0;
+  color: #000;
+}
+
+/* Completed state: different color + subtle highlight */
+.benchmark-btn.completed {
+  box-shadow: 0 0 0 2px #fff;
+  opacity: 0.95;
+}
+
+.benchmark-btn.completed.bm-red {
+  background: #ff5252;   /* brighter red */
+}
+
+.benchmark-btn.completed.bm-blue {
+  background: #4fc3f7;   /* lighter blue */
+  color: #000;
+}
+
+.benchmark-btn.completed.bm-orange {
+  background: #ffb74d;   /* lighter orange */
+  color: #000;
+}
+
+.benchmark-btn.completed.bm-white {
+  background: #9e9e9e;   /* darker neutral */
+  color: #fff;
+}
+/* Recommended: checkmark prefix */
+.benchmark-btn.completed::before {
+  content: "✔ ";
+  font-weight: bold;
+  color: #0f0;  /* bright green checkmark — adjust if desired */
+}
+
+/* Larger benchmark buttons */
+.benchmark-btn {
+  padding: 8px 10px;     /* was ~4px 6px */
+  font-size: 14px;       /* was 12px */
+  border-radius: 6px;    /* slightly rounder */
+  min-height: 32px;      /* ensures larger hit target */
+}
+
+/* Category title spacing adjusts automatically */
+.benchmarks-category-title {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+/* Slightly larger gap between buttons */
+.benchmarks-buttons {
+  gap: 6px;              /* was 4px */
+}
 
 
 
@@ -670,7 +793,9 @@
 <body>
 
   <div id="toolbar">
-    <button id="btnToggleSidebar">Toggle Preset Units</button>
+ 
+    <button id="btnToggleSidebar">Hide Sidebar</button>
+
 
     <div class="spacer"></div>
 
@@ -719,80 +844,94 @@
     <span id="modeLabel" class="mode-indicator">Mode: Move/Select</span>
 
   </div>
-
-  <div id="board">
-    <div id="sidebar">
-      <div class="preset-group" style="padding:4px 6px; display:flex; gap:4px; justify-content:space-between;">
-        <button id="btnCollapseAll" style="flex:1; font-size:11px;">Collapse All</button>
-        <button id="btnExpandAll" style="flex:1; font-size:11px;">Expand All</button>
-      </div>
-
-      <div class="preset-group collapsible-group">
-        <div class="preset-title collapsible-header">Engines</div>
-        <div class="preset-buttons collapsible-content" id="enginePresets"></div>
-      </div>
-
-      <div class="preset-group collapsible-group">
-        <div class="preset-title collapsible-header">Towers</div>
-        <div class="preset-buttons collapsible-content" id="towerPresets"></div>
-      </div>
-
-      <div class="preset-group collapsible-group">
-        <div class="preset-title collapsible-header">Tower Outside Teams</div>
-        <div class="preset-buttons collapsible-content" id="towerOutsidePresets"></div>
-      </div>
-
-      <div class="preset-group collapsible-group">
-        <div class="preset-title collapsible-header">Rescues</div>
-        <div class="preset-buttons collapsible-content" id="rescuePresets"></div>
-      </div>
-
-      <div class="preset-group collapsible-group">
-        <div class="preset-title collapsible-header">RIT</div>
-        <div class="preset-buttons collapsible-content" id="ritPresets"></div>
-      </div>
-
-      <div class="preset-group collapsible-group">
-        <div class="preset-title collapsible-header">Command</div>
-        <div class="preset-buttons collapsible-content" id="chiefPresets"></div>
-      </div>
-
-      <div class="preset-group collapsible-group">
-        <div class="preset-title collapsible-header">Medic Units</div>
-        <div class="preset-buttons collapsible-content" id="medicUnitPresets"></div>
-      </div>
-
-      <div class="preset-group collapsible-group">
-        <div class="preset-title collapsible-header">Other</div>
-        <div class="preset-buttons collapsible-content" id="otherPresets"></div>
-      </div>
+<div id="board">
+  <div id="sidebar">
+    <!-- Sidebar header tabs -->
+    <div id="sidebarHeader">
+      <button id="btnSidebarUnits" class="sidebar-tab active">Units</button>
+      <button id="btnSidebarBenchmarks" class="sidebar-tab">Benchmarks</button>
     </div>
 
-<div id="workspaceContainer">
+    <!-- Sidebar content area -->
+    <div id="sidebarContent">
+      <!-- Units / Presets content -->
+      <div id="presetSidebarContent">
+        <div class="preset-group" style="padding:4px 6px; display:flex; gap:4px; justify-content:space-between;">
+          <button id="btnCollapseAll" style="flex:1; font-size:11px;">Collapse All</button>
+          <button id="btnExpandAll" style="flex:1; font-size:11px;">Expand All</button>
+        </div>
 
-  <!-- Tab bar (single instance) -->
-  <div id="tabBar">
-    <!-- tabs are injected here before this button -->
-    <button id="btnAddTab">+</button>
-    ...
-  </div>
+        <div class="preset-group collapsible-group">
+          <div class="preset-title collapsible-header">Engines</div>
+          <div class="preset-buttons collapsible-content" id="enginePresets"></div>
+        </div>
 
-  <!-- Worksheet area (RESTORED) -->
-  <div id="worksheet">
-    <div id="mapWrapper">
-      <img
-        id="worksheetImage"
-        src="worksheet2.png"
-        alt="Worksheet"
-      />
-      <canvas id="drawCanvas"></canvas>
+        <div class="preset-group collapsible-group">
+          <div class="preset-title collapsible-header">Towers</div>
+          <div class="preset-buttons collapsible-content" id="towerPresets"></div>
+        </div>
+
+        <div class="preset-group collapsible-group">
+          <div class="preset-title collapsible-header">Tower Outside Teams</div>
+          <div class="preset-buttons collapsible-content" id="towerOutsidePresets"></div>
+        </div>
+
+        <div class="preset-group collapsible-group">
+          <div class="preset-title collapsible-header">Rescues</div>
+          <div class="preset-buttons collapsible-content" id="rescuePresets"></div>
+        </div>
+
+        <div class="preset-group collapsible-group">
+          <div class="preset-title collapsible-header">RIT</div>
+          <div class="preset-buttons collapsible-content" id="ritPresets"></div>
+        </div>
+
+        <div class="preset-group collapsible-group">
+          <div class="preset-title collapsible-header">Command</div>
+          <div class="preset-buttons collapsible-content" id="chiefPresets"></div>
+        </div>
+
+        <div class="preset-group collapsible-group">
+          <div class="preset-title collapsible-header">Medic Units</div>
+          <div class="preset-buttons collapsible-content" id="medicUnitPresets"></div>
+        </div>
+
+        <div class="preset-group collapsible-group">
+          <div class="preset-title collapsible-header">Other</div>
+          <div class="preset-buttons collapsible-content" id="otherPresets"></div>
+        </div>
+      </div>
+
+      <!-- Benchmarks sidebar (initially hidden) -->
+      <div id="benchmarksSidebarContent" style="display:none;"></div>
     </div>
   </div>
 
-  <!-- 🔹 Notes Tab panel (GLOBAL NOTES + PAR LOG) -->
-  <div id="notesTabPanel"></div>
+  <div id="workspaceContainer">
+    <!-- Tab bar (single instance) -->
+    <div id="tabBar">
+      <!-- tabs are injected here before this button -->
+      <button id="btnAddTab">+</button>
+      ...
+    </div>
 
-</div> <!-- end #workspaceContainer -->
+    <!-- Worksheet area -->
+    <div id="worksheet">
+      <div id="mapWrapper">
+        <img
+          id="worksheetImage"
+          src="worksheet2.png"
+          alt="Worksheet"
+        />
+        <canvas id="drawCanvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Notes Tab panel -->
+    <div id="notesTabPanel"></div>
+  </div> <!-- end #workspaceContainer -->
+</div> <!-- end #board -->
+<!-- end #workspaceContainer -->
 
 
 <!-- Floating Notes window (keep outside container or just after it) -->
@@ -846,6 +985,13 @@ const btnZoomOut  = document.getElementById("btnZoomOut");
 const tabTemplateDropdown = document.getElementById("tabTemplateDropdown");
 const btnNewWorksheet     = document.getElementById("btnNewWorksheet");
 const templateMenu        = document.getElementById("templateMenu");
+const presetSidebarContent     = document.getElementById("presetSidebarContent");
+const benchmarksSidebarContent = document.getElementById("benchmarksSidebarContent");
+
+
+// Optional: hook benchmark logs into a text area later if you add one
+const globalNotesElement = document.getElementById("globalNotes") || null;
+
 
 const zoomSlider  = document.getElementById("zoomSlider");
 
@@ -890,6 +1036,214 @@ document.addEventListener("click", (e) => {
     templateMenu.classList.remove("open");
   }
 });
+// ===== Benchmarks in Sidebar + Sidebar Mode (Units/Benchmarks) =====
+const benchmarkDefs = [
+  // Fire Attack (Red)
+  { id: "waterOnFire",        label: "Water on the Fire",          category: "Fire Attack",       colorClass: "bm-red" },
+  { id: "waterSupply",        label: "Water Supply Established",   category: "Fire Attack",       colorClass: "bm-red" },
+  { id: "fireKnockedDown",    label: "Fire Knocked Down",          category: "Fire Attack",       colorClass: "bm-red" },
+  { id: "fireOut",            label: "Fire Out",                   category: "Fire Attack",       colorClass: "bm-red" },
+
+  // Search/Rescue (Blue)
+  { id: "primarySearchAllClear", label: 'Primary Search "All Clear"', category: "Search/Rescue",  colorClass: "bm-blue" },
+  { id: "primaryVent",        label: "Primary Vent",               category: "Search/Rescue",     colorClass: "bm-blue" },
+  { id: "laddersSecondary",   label: "Ladders/Secondary Egress",   category: "Search/Rescue",     colorClass: "bm-blue" },
+  { id: "secondarySearch",    label: "Secondary Search Complete",  category: "Search/Rescue",     colorClass: "bm-blue" },
+
+  // Safety (Orange)
+  { id: "twoOut",             label: "2-out",                      category: "Safety",            colorClass: "bm-orange" },
+  { id: "ritEstablished",     label: "RIT Established",            category: "Safety",            colorClass: "bm-orange" },
+  { id: "readyRescue",        label: "Ready Rescue",               category: "Safety",            colorClass: "bm-orange" },
+  { id: "rehab",              label: "Rehab",                      category: "Safety",            colorClass: "bm-orange" },
+
+  // Building/Property (White)
+  { id: "elecUtilities",      label: "Elec. Utilities",            category: "Building/Property", colorClass: "bm-white" },
+  { id: "gasUtilities",       label: "Gas Utilities",              category: "Building/Property", colorClass: "bm-white" },
+  { id: "fdcFirePump",        label: "FDC/Fire Pump",              category: "Building/Property", colorClass: "bm-white" },
+  { id: "salvage",            label: "Salvage",                    category: "Building/Property", colorClass: "bm-white" },
+  { id: "overhaul",           label: "Overhaul",                   category: "Building/Property", colorClass: "bm-white" },
+];
+
+const benchmarkCategoriesOrder = [
+  "Fire Attack",
+  "Search/Rescue",
+  "Safety",
+  "Building/Property"
+];
+
+const benchmarksState = {};
+
+function buildBenchmarksSidebar() {
+  if (!benchmarksSidebarContent) return;
+
+  benchmarksSidebarContent.innerHTML = "";
+
+  benchmarkCategoriesOrder.forEach(categoryName => {
+    const categoryDiv = document.createElement("div");
+    categoryDiv.className = "benchmarks-category";
+
+    const title = document.createElement("div");
+    title.className = "benchmarks-category-title";
+    title.textContent = categoryName;
+
+    const buttonsWrap = document.createElement("div");
+    buttonsWrap.className = "benchmarks-buttons";
+
+    benchmarkDefs
+      .filter(b => b.category === categoryName)
+      .forEach(def => {
+        const btn = document.createElement("button");
+        btn.className = "benchmark-btn " + def.colorClass;
+        btn.textContent = def.label;
+        btn.dataset.benchmarkId = def.id;
+        btn.dataset.benchmarkLabel = def.label;
+        btn.addEventListener("click", onBenchmarkClick);
+        buttonsWrap.appendChild(btn);
+      });
+
+    categoryDiv.appendChild(title);
+    categoryDiv.appendChild(buttonsWrap);
+    benchmarksSidebarContent.appendChild(categoryDiv);
+  });
+}
+
+// Optional: log benchmark completion into a global notes area if present
+function logToGlobalNotes(message) {
+  const ts = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const line = `[${ts}] ${message}`;
+
+  if (globalNotesElement) {
+    globalNotesElement.value =
+      (globalNotesElement.value ? globalNotesElement.value + "\n" : "") + line;
+  }
+  
+}
+
+function onBenchmarkClick(e) {
+  const btn   = e.currentTarget;
+  const id    = btn.dataset.benchmarkId;
+  const label = btn.dataset.benchmarkLabel;
+
+  const prev = benchmarksState[id]?.completed || false;
+  const nowCompleted = !prev;
+
+  benchmarksState[id] = { completed: nowCompleted };
+  btn.classList.toggle("completed", nowCompleted);
+
+  if (nowCompleted) {
+    // Use your existing time formatter for consistency with PAR
+    const time = typeof formatParTime === "function"
+      ? formatParTime()
+      : new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    // Store the time in the button dataset and show it on the button
+    btn.dataset.benchmarkTime = time;
+    btn.textContent = `${label} (${time})`;
+
+    // Build log text
+    const logText = `Benchmark "${label}" completed at ${time}`;
+
+    // Optional: write to any global notes element if it exists
+    if (typeof logToGlobalNotes === "function") {
+      logToGlobalNotes(logText);
+    }
+
+    // Always write to the Notes Log
+    addNoteLogEntry("Benchmarks", label, logText);
+  } else {
+    // Reset to original label and clear stored time
+    btn.classList.remove("completed");
+    btn.dataset.benchmarkTime = "";
+    btn.textContent = label;
+
+    // If you want to also log "reset" events, you could add:
+    // const time = formatParTime();
+    // const resetText = `Benchmark "${label}" reset at ${time}`;
+    // addNoteLogEntry("Benchmarks", label, resetText);
+  }
+}
+
+
+// Sidebar mode: "presets" <-> "benchmarks"
+// Sidebar mode: "units" <-> "benchmarks"
+let sidebarMode = "units";
+
+function applySidebarMode() {
+  if (!sidebar) return;
+
+  // Show/hide the two content sections
+  if (presetSidebarContent) {
+    presetSidebarContent.style.display =
+      (sidebarMode === "units") ? "block" : "none";
+  }
+
+  if (benchmarksSidebarContent) {
+    const show = (sidebarMode === "benchmarks");
+    benchmarksSidebarContent.style.display = show ? "block" : "none";
+
+    if (show && !benchmarksSidebarContent.hasChildNodes()) {
+      buildBenchmarksSidebar();
+    }
+  }
+
+  // Tab button appearance
+  if (btnSidebarUnits) {
+    btnSidebarUnits.classList.toggle("active", sidebarMode === "units");
+  }
+  if (btnSidebarBenchmarks) {
+    btnSidebarBenchmarks.classList.toggle("active", sidebarMode === "benchmarks");
+  }
+
+  // Recalc canvas for width change
+  if (typeof resizeCanvas === "function") {
+    setTimeout(resizeCanvas, 350);
+  }
+}
+
+// Click handlers for the tabs
+if (btnSidebarUnits) {
+  btnSidebarUnits.addEventListener("click", () => {
+    sidebarMode = "units";
+    applySidebarMode();
+  });
+}
+
+if (btnSidebarBenchmarks) {
+  btnSidebarBenchmarks.addEventListener("click", () => {
+    sidebarMode = "benchmarks";
+    applySidebarMode();
+  });
+}
+
+// Initialize sidebar mode
+applySidebarMode();
+
+
+// Click: hide/show sidebar entirely
+if (btnToggleSidebar) {
+  btnToggleSidebar.addEventListener("click", () => {
+    if (!sidebar) return;
+
+    const isHidden = sidebar.classList.toggle("hidden");
+    btnToggleSidebar.textContent = isHidden ? "Show Sidebar" : "Hide Sidebar";
+
+    if (typeof resizeCanvas === "function") {
+      setTimeout(resizeCanvas, 350);
+    }
+  });
+}
+
+// Initialize
+applySidebarMode();
+
+// Ensure correct label on load
+if (sidebar && sidebar.classList.contains("hidden")) {
+  if (btnToggleSidebar) btnToggleSidebar.textContent = "Show Sidebar";
+} else {
+  if (btnToggleSidebar) btnToggleSidebar.textContent = "Hide Sidebar";
+}
+
+
 
 
 /* Tab Elements */
@@ -898,7 +1252,7 @@ const btnAddTab = document.getElementById("btnAddTab");
 
 /* ===== Default layout ===== */
 const DEFAULT_LAYOUT = {
-  "tabs": [
+ "tabs": [
     {
       "id": 1,
       "name": "Main Board",
@@ -948,12 +1302,13 @@ const DEFAULT_LAYOUT = {
   "currentTabId": 1
 };
 
+
 const GRID = 10;
 
 let mode = "move";
 let selected = null;
 
-let draggingTile = null;
+let draggingTile = null
 let dragOffsetX = 0, dragOffsetY = 0;
 
 let isDrawing = false;
@@ -970,6 +1325,9 @@ let mouseMovedDuringPress = false;
 // For double-tap on items in the floating notes list
 let lastNoteTapTime = 0;
 let lastNoteTappedItem = null;
+
+let clickNoteTimeout = null;
+let lastClickTile = null;
 
 
 /* ===== TAB MANAGEMENT ===== */
@@ -1590,8 +1948,17 @@ if (parToggleBtn) {
 }
 
 /* Mouse Double-Click (PAR Confirm or Duplicate) */
+/* Mouse Double-Click (PAR Confirm or Duplicate) */
 function handleTileDoubleClick(e) {
   const tile = e.currentTarget;
+
+  // Cancel any pending single-click note open
+  if (clickNoteTimeout) {
+    clearTimeout(clickNoteTimeout);
+    clickNoteTimeout = null;
+    lastClickTile = null;
+  }
+
   const type = tile.dataset.type || "";
   const isTextTile =
     type.toLowerCase() === "text" || tile.classList.contains("texttile");
@@ -1611,6 +1978,7 @@ function handleTileDoubleClick(e) {
 
   if (mode === "move") duplicateTileGeneric(tile);
 }
+
 function applyState(state) {
   applyingState = true;
 
@@ -1716,11 +2084,7 @@ btnRedo.addEventListener("click", () => {
 });
 
 
-/* Toggle Sidebar */
-btnToggleSidebar.onclick = () => {
-  sidebar.classList.toggle("hidden");
-  setTimeout(resizeCanvas, 350);
-};
+
 
 /* Canvas sizing */
 function resizeCanvas() {
@@ -1806,6 +2170,17 @@ function select(el) {
   selected = el;
   selected.classList.add("selected");
 }
+function addNoteLogEntry(tabName, label, text) {
+  noteLogEntries.push({ tabName, label, text });
+
+  // If we're currently viewing the Notes tab, refresh it so the new
+  // benchmark log line shows up immediately.
+  const currentTab = tabs.find(t => t.id === currentTabId);
+  if (currentTab && currentTab.isNotesTab) {
+    showGlobalNotesInNotesTab();
+  }
+}
+
 
 /* Notes Tab: global notes + PAR log */
 function showGlobalNotesInNotesTab() {
@@ -2199,8 +2574,30 @@ function createTileElement(type, cssClass, text) {
   tile.addEventListener("touchstart", startTileDragTouch, { passive: false });
   tile.ondblclick = handleTileDoubleClick;
 
+  // Single mouse click → open note (but ignore drag and double-click)
+  tile.addEventListener("click", (e) => {
+    // If we dragged the tile, don't treat it as a click-for-note
+    if (mouseMovedDuringPress) {
+      mouseMovedDuringPress = false;
+      return;
+    }
+
+    // Wait a bit to see if this becomes a double-click
+    if (clickNoteTimeout) clearTimeout(clickNoteTimeout);
+    lastClickTile = tile;
+
+    clickNoteTimeout = setTimeout(() => {
+      if (lastClickTile === tile) {
+        openNotePrompt(tile);
+      }
+      clickNoteTimeout = null;
+      lastClickTile = null;
+    }, DOUBLE_TAP_MS);
+  });
+
   return tile;
 }
+
 
 function createTile(type, cssClass) {
   const label = prompt(`Enter ${type} label:`);
@@ -2303,7 +2700,7 @@ buildPresetButtons("medicUnitPresets", [
 
 buildPresetButtons("otherPresets", [
   "AIR1","BOMB", "FOAM", "WOODS-14","WOODS-16","DIVE-1", "DIVE-2"
-], "Other","other","other-preset");
+], "Other","other","preset-other");
 
 /* Tile drag: mouse */
 function startTileDragMouse(e) {
@@ -2327,13 +2724,6 @@ function startTileDragMouse(e) {
   draggingTile = tile;
   mouseMovedDuringPress = false;
 
-  clearTimeout(longPressTimeout);
-  longPressTimeout = setTimeout(() => {
-    if (!mouseMovedDuringPress && draggingTile === tile) {
-      openNotePrompt(tile);
-      draggingTile = null;
-    }
-  }, LONG_PRESS_MS);
 
   document.addEventListener("mousemove", tileDragMouse);
   document.addEventListener("mouseup", stopTileDragMouse);
@@ -2391,13 +2781,7 @@ function startTileDragTouch(e) {
 
   draggingTile = tile;
 
-  clearTimeout(longPressTimeout);
-  longPressTimeout = setTimeout(() => {
-    if (!touchMoved && draggingTile === tile) {
-      openNotePrompt(tile);
-      draggingTile = null;
-    }
-  }, LONG_PRESS_MS);
+
 
   document.addEventListener("touchmove", tileDragTouch, { passive: false });
   document.addEventListener("touchend", stopTileDragTouch, { passive: false });
@@ -2427,24 +2811,31 @@ function tileDragTouch(e) {
 }
 
 function stopTileDragTouch(e) {
-  clearTimeout(longPressTimeout);
+  // DO NOT clear longPressTimeout here anymore – we use it as our "single-tap" timer
 
-  // Handle double-tap logic
+  // Handle tap logic only if we didn't move (no drag)
   if (!touchMoved && draggingTile) {
     const now = Date.now();
+    const tile = draggingTile;
+    const type = tile.dataset.type || "";
+    const isTextTile =
+      type.toLowerCase() === "text" || tile.classList.contains("texttile");
 
-    if (lastTapTile === draggingTile && (now - lastTapTime) < DOUBLE_TAP_MS) {
-      const tile = draggingTile;
-      const type = tile.dataset.type || "";
-      const isTextTile =
-        type.toLowerCase() === "text" || tile.classList.contains("texttile");
+    const timeSinceLastTap = now - lastTapTime;
+
+    if (lastTapTile === tile && timeSinceLastTap < DOUBLE_TAP_MS) {
+      // 🔁 Second tap within double-tap window → treat as double-tap
+      if (longPressTimeout) {
+        clearTimeout(longPressTimeout);
+        longPressTimeout = null;
+      }
 
       if (parModeActive && tile.classList.contains("par-pending") && !isTextTile) {
         const labelFromData = tile.dataset.label || tile.dataset.unit || "";
         const unitLabel = labelFromData || tile.textContent.trim();
-        const time = formatParTime();
+        const parTime = formatParTime();
 
-        logParNote(`PAR – ${unitLabel} – ${time}`);
+        logParNote(`PAR – ${unitLabel} – ${parTime}`);
         tile.classList.remove("par-pending");
         tile.classList.add("par-complete");
       } else {
@@ -2453,8 +2844,19 @@ function stopTileDragTouch(e) {
 
       lastTapTile = null;
     } else {
-      lastTapTile = draggingTile;
+      // 👆 Single tap: schedule note open, but give window for a second tap
+      lastTapTile = tile;
       lastTapTime = now;
+
+      if (longPressTimeout) clearTimeout(longPressTimeout);
+      longPressTimeout = setTimeout(() => {
+        // If no second tap came in, actually open the note
+        if (lastTapTile === tile) {
+          openNotePrompt(tile);
+          lastTapTile = null;
+        }
+        longPressTimeout = null;
+      }, DOUBLE_TAP_MS);
     }
   }
 
@@ -2473,10 +2875,12 @@ function stopTileDragTouch(e) {
   }
 
   draggingTile = null;
+  touchMoved = false;
 
   document.removeEventListener("touchmove", tileDragTouch);
   document.removeEventListener("touchend", stopTileDragTouch);
 }
+
 
 
 /* Duplicate tile */
@@ -2831,8 +3235,3 @@ saveState();
 
 </body>
 </html>
-
-
-
-
-
