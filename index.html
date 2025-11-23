@@ -825,6 +825,7 @@
     <div id="moreDropdown" class="toolbar-dropdown">
       <button id="btnMoreActions" class="dropdown-toggle">More ▾</button>
       <div id="moreMenu" class="dropdown-menu">
+        <button id="btnShareIncident">Share</button>
         <button id="btnSaveLayout">Save Layout</button>
         <button id="btnLoadLayout">Load Layout</button>
         <button id="btnChangeBg" title="Upload Image/Map">Upload Worksheet</button>
@@ -957,7 +958,87 @@
   // existing JS...
 </script>
 
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+
+
 <script>
+   const firebaseConfig = {
+    apiKey: "AIzaSyDwnykQnBA9PD84qdImwjKtHT4sP2LeJ_0",
+    authDomain: "dtw-realtime.firebaseapp.com",
+    projectId: "dtw-realtime",
+    storageBucket: "dtw-realtime.firebasestorage.app",
+    messagingSenderId: "894225586448",
+    appId: "1:894225586448:web:a297a6d69e6acb7eb1ed95",
+    measurementId: "G-MEWH1VRQRP"
+  };
+  const appFB = firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* --- Generate or read session ID from URL --- */
+let sessionId = null;
+
+function initSession() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("session")) {
+    sessionId = params.get("session");
+    console.log("Joining existing session:", sessionId);
+    startListeningToSession();
+  }
+}
+
+function createNewSession() {
+  sessionId = crypto.randomUUID();
+  const url = window.location.origin + window.location.pathname + "?session=" + sessionId;
+  navigator.clipboard.writeText(url);
+  alert("Share this link:\n" + url);
+
+  // Push initial layout
+  pushStateToFirebase();
+  startListeningToSession();
+}
+
+/* --- SAVE TO FIREBASE --- */
+function pushStateToFirebase() {
+  if (!sessionId) return;
+
+  const tab = tabs.find(t => t.id === currentTabId);
+  if (!tab) return;
+
+  const state = {
+    tabs,
+    currentTabId
+  };
+
+  firebase.database().ref("sessions/" + sessionId).set(state);
+}
+
+/* --- RECEIVE FROM FIREBASE --- */
+function startListeningToSession() {
+  if (!sessionId) return;
+
+  firebase.database().ref("sessions/" + sessionId).on("value", (snap) => {
+    const data = snap.val();
+    if (!data) return;
+
+    // Apply remote state
+    tabs = data.tabs;
+    currentTabId = data.currentTabId;
+
+    loadTabFromMemory(currentTabId);
+    renderTabBar();
+    refreshNotesList();
+  });
+}
+
+/* Hook DTW events */
+const originalSaveCurrentTab = saveCurrentTabToMemory;
+saveCurrentTabToMemory = function() {
+  originalSaveCurrentTab();
+  pushStateToFirebase();  // Real-time sync
+};
+
+initSession();
 /* ===== DOM references ===== */
 const worksheet      = document.getElementById("worksheet");
 const mapWrapper     = document.getElementById("mapWrapper"); 
@@ -1026,6 +1107,11 @@ if (btnNewWorksheet && templateMenu && tabTemplateDropdown) {
     });
   });
 }
+ //share incident 
+  document.getElementById("btnShareIncident").onclick = () => {
+  createNewSession();
+};
+
 
 // Global click: close both dropdowns
 document.addEventListener("click", (e) => {
@@ -3235,3 +3321,4 @@ saveState();
 
 </body>
 </html>
+
