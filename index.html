@@ -761,6 +761,11 @@
         <div class="preset-title collapsible-header">Medic Units</div>
         <div class="preset-buttons collapsible-content" id="medicUnitPresets"></div>
       </div>
+
+      <div class="preset-group collapsible-group">
+        <div class="preset-title collapsible-header">Other</div>
+        <div class="preset-buttons collapsible-content" id="otherPresets"></div>
+      </div>
     </div>
 
 <div id="workspaceContainer">
@@ -2328,6 +2333,10 @@ buildPresetButtons("medicUnitPresets", [
   "M102","M141", "M161", "M171","M201","M601", "M801"
 ], "Rescue","rescue","preset-rescue");
 
+buildPresetButtons("otherPresets", [
+  "AIR1","BOMB", "FOAM", "WOODS-14","WOODS-16","DIVE-1", "DIVE-2"
+], "Other","other","other-preset");
+
 /* Tile drag: mouse */
 function startTileDragMouse(e) {
   const tile = e.currentTarget;
@@ -2619,6 +2628,9 @@ drawCanvas.addEventListener("mouseleave", () => {
 });
 
 
+
+
+
 /* ===== Drawing: touch (pen / erase / check) ===== */
 
 drawCanvas.addEventListener("touchstart", e => {
@@ -2851,5 +2863,4 @@ saveState();
 
 </body>
 </html>
-
 
