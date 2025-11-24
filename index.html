@@ -1078,12 +1078,7 @@ function startListeningToSession() {
   });
 }
 
-/* Hook DTW events */
-const originalSaveCurrentTab = saveCurrentTabToMemory;
-saveCurrentTabToMemory = function() {
-  originalSaveCurrentTab();
-  pushStateToFirebase();  // Real-time sync
-};
+
 
 initSession();
 /* ===== DOM references ===== */
@@ -3405,6 +3400,7 @@ saveState();
 
 </body>
 </html>
+
 
 
 
