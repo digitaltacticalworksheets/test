@@ -3373,6 +3373,13 @@ document.addEventListener("touchend", () => {
   notesDrag = false;
   floatingNotes.classList.remove("dragging");
 });
+// === FIREBASE HOOKS APPLY LAST ===
+const realSaveCurrentTab = saveCurrentTabToMemory;
+
+saveCurrentTabToMemory = function () {
+  realSaveCurrentTab();       // save to local tabs[]
+  pushStateToFirebase();      // sync to other users
+};
 
 /* Init */
 initTabs(); 
@@ -3398,6 +3405,7 @@ saveState();
 
 </body>
 </html>
+
 
 
 
