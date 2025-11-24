@@ -2166,11 +2166,16 @@ let applyingState = false;
 
 function saveState() {
   if (applyingState) return;
-  
+
   const tiles = [...mapWrapper.querySelectorAll(".unit-tile")];
   const state = tiles.map(t => ({
     type: t.dataset.type,
-    cssClass: [...t.classList].find(c => c !== "unit-tile" && c !== "selected"),
+    cssClass: [...t.classList].find(c =>
+      c !== "unit-tile" &&
+      c !== "selected" &&
+      c !== "par-pending" &&
+      c !== "par-complete"
+    ),
     left: t.style.left,
     top: t.style.top,
     label: t.textContent,
@@ -2182,10 +2187,11 @@ function saveState() {
   historyIndex++;
   refreshNotesList();
 
-  // 🔹 NEW: keep tab model + Firebase in sync on every change
+  // Real-time sync for tile moves
   if (typeof saveCurrentTabToMemory === "function") {
     saveCurrentTabToMemory();
   }
+}
 
 
 /* Drawing undo history (canvas only) */
@@ -3392,6 +3398,7 @@ saveState();
 
 </body>
 </html>
+
 
 
 
