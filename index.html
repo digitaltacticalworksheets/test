@@ -2183,8 +2183,7 @@ function saveState() {
   refreshNotesList();
 
   // 🔹 NEW: keep tab model + Firebase in sync on every change
-  if (typeof saveCurrentTabToMemory === "function") {
-    saveCurrentTabToMemory();
+ saveCurrentTabToMemory();
   }
 }
 
@@ -3392,6 +3391,7 @@ saveState();
 
 </body>
 </html>
+
 
 
 
