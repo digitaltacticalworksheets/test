@@ -1010,19 +1010,6 @@ if (btnMoreActions && moreMenu && moreDropdown) {
   });
 }
 
-const AUTOSAVE_KEY = "dtw-autosave-v1";
-
-setInterval(() => {
-  try {
-    const json = exportLayoutState();
-    localStorage.setItem(AUTOSAVE_KEY, json);
-    // console.log("Autosaved DTW layout at", new Date().toISOString());
-  } catch (err) {
-    console.error("Autosave failed:", err);
-  }
-}, 30_000); // 60,000 ms = 1 minute
-
-
 // New worksheet template dropdown
 if (btnNewWorksheet && templateMenu && tabTemplateDropdown) {
   btnNewWorksheet.addEventListener("click", (e) => {
@@ -1879,6 +1866,39 @@ bgUploadInput.onchange = e => {
   reader.readAsDataURL(file);
   e.target.value = "";
 };
+
+/* ===========================
+   RESTORE AUTOSAVE IF PRESENT
+   =========================== */
+
+window.addEventListener("load", () => {
+  try {
+    const saved = localStorage.getItem(AUTOSAVE_KEY);
+    if (!saved) return; // nothing to restore
+
+    const ok = confirm("An autosaved worksheet was found. Restore it?");
+    if (!ok) return;
+
+    const state = JSON.parse(saved);
+
+    if (!state.tabs || !Array.isArray(state.tabs)) return;
+
+    // Restore global state
+    tabs = state.tabs;
+    currentTabId = state.currentTabId || tabs[0]?.id;
+
+    if (currentTabId) {
+      loadTabFromMemory(currentTabId);
+    }
+
+    renderTabBar();
+    refreshNotesList?.();
+
+  } catch (err) {
+    console.error("Failed to restore autosaved layout:", err);
+  }
+});
+
 
 
 
@@ -3223,17 +3243,37 @@ document.addEventListener("touchend", () => {
   notesDrag = false;
   floatingNotes.classList.remove("dragging");
 });
+/* ===========================
+   AUTOSAVE (localStorage)
+   =========================== */
+
+const AUTOSAVE_KEY = "dtw-autosave-v1";
+
+/* Serialize entire DTW state */
 function exportLayoutState() {
-  // Make sure current tab is up to date
+  // Always save the state of current tab first
   saveCurrentTabToMemory();
 
-  const state = {
+  return JSON.stringify({
     tabs,
     currentTabId
-  };
-
-  return JSON.stringify(state);
+  });
 }
+
+/* Write autosave snapshot to localStorage */
+function autosave() {
+  try {
+    const json = exportLayoutState();
+    localStorage.setItem(AUTOSAVE_KEY, json);
+    // console.log("Autosaved at " + new Date().toLocaleTimeString());
+  } catch (err) {
+    console.error("Autosave failed:", err);
+  }
+}
+
+/* Autosave every 10 seconds */
+setInterval(autosave, 10_000);
+
 
 
 /* Init */
@@ -3260,4 +3300,3 @@ saveState();
 
 </body>
 </html>
-
