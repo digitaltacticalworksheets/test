@@ -1,0 +1,30 @@
+<!--?xml version="1.0" encoding="UTF-8"?-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 120">
+  <g fill="#d10000">
+    <!-- Top dome (simple geometry) -->
+    <rect x="30" y="4" width="20" height="12" rx="6"></rect>
+
+    <!-- Shoulder ring -->
+    <rect x="22" y="16" width="36" height="6" rx="3"></rect>
+
+    <!-- GIS-style tapered barrel -->
+    <path d="
+      M26 22
+      H54
+      V82
+      H26
+      Z"></path>
+
+    <!-- Left GIS nozzle (clean rectangle) -->
+    <rect x="10" y="46" width="12" height="14" rx="2"></rect>
+    
+    <!-- Right GIS nozzle -->
+    <rect x="58" y="46" width="12" height="14" rx="2"></rect>
+
+    <!-- Lower ring -->
+    <rect x="20" y="82" width="40" height="8" rx="3"></rect>
+
+    <!-- Base block (flat tactical icon look) -->
+    <rect x="16" y="92" width="48" height="14" rx="3"></rect>
+  </g>
+</svg>
