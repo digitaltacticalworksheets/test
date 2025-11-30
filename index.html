@@ -457,6 +457,35 @@
 .unit-tile[data-par-status="complete"]::before {
   background: #4caf50;
 }
+    /* Base unit tile (you already have something like this) */
+/* .unit-tile {
+  position: absolute;
+  /* existing width, height, font, etc */
+} */
+
+/* Hydrant variation (background SVG) */
+.unit-tile.hydrant {
+  width: 40px;           /* tweak if you want */
+  height: 56px;          /* a bit taller than engines */
+  background-image: url("hydrant.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  border: none;
+  border-radius: 0;
+  padding: 0;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  font-size: 10px;       /* small HYD label */
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 0 2px #000;
+}
+
 
 
   .note-item {
@@ -811,6 +840,7 @@
 
     <button id="btnAutoStack" title="Auto Organize">Stack Units</button>
     <button id="initParBtn">PAR</button>
+    <button id="btnAddHydrant">Hydrant</button>
 
     <div class="spacer"></div>
 
@@ -1454,6 +1484,19 @@ function createTabFromTemplate(templateKey) {
   loadTabFromMemory(newTab.id);
   renderTabBar();
 }
+  document.getElementById("btnAddHydrant")?.addEventListener("click", addHydrantTile);
+
+function addHydrantTile() {
+  // Assuming your createTile(type, cssClass) returns the DOM element:
+  const tile = createTile("hydrant", "hydrant");
+
+  // Label so it shows on the tile & in notes/history if you use textContent
+  tile.textContent = "HYD";
+
+  // Optional: set a default data label for later
+  tile.dataset.label = "HYD";
+}
+
 
 /* ===== Zoom & Pan ===== */
 
@@ -3300,3 +3343,4 @@ saveState();
 
 </body>
 </html>
+
